@@ -31,6 +31,4 @@ RUN npm install
 WORKDIR /opt/mobile/app
 # for development, we bind mount volumes; comment out for production
 COPY ./mobile .
-
-ENTRYPOINT ["npm", "start"]
 # CMD ["web"]
