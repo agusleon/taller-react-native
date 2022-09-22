@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "style:lint": "eslint '**/*.{js,jsx,ts,tsx}'"
   },
   "dependencies": {
     "expo": "~46.0.9",
@@ -16,7 +17,9 @@
     "react-native-paper": "^4.12.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9"
+    "@babel/core": "^7.12.9",
+    "eslint": "^8.23.1",
+    "eslint-plugin-react": "^7.31.8"
   },
   "private": true
 }
