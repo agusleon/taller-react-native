@@ -2,11 +2,17 @@ import { StatusBar } from 'expo-status-bar';
 import { useState, React } from 'react';
 import { StyleSheet, View} from 'react-native';
 import { Button, Text } from 'react-native-paper';
+import Signup from './screens/Signup';
+import Dashboard from './screens/Profile';
+import Login from './screens/Login'
+
 
 export default function App() {
 
   const [mobile, setInfoMobile] = useState('');
   const [web, setInfoWeb] = useState('');
+
+  //
 
   const handleClickMobile = async () => {
 
@@ -72,8 +78,13 @@ export default function App() {
         <Button mode="contained-tonal" onPress={clearData}>
             Clear
         </Button>
-      </View>
+
       
+      <Signup/>
+      </View>
+
+
+
       <StatusBar style="auto" />
     </View>
   );
