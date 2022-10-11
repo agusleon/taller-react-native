@@ -1,32 +1,20 @@
 import  React, {useState} from 'react';
 import { StyleSheet, View, SafeAreaView,TouchableOpacity,Image} from 'react-native';
-import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
+import { Text, TextInput, Button} from 'react-native-paper';
 
-import { signInWithGoogle,logInWithEmailAndPassword} from '../firebase'
 
-export default function LoginScreen({navigation}) {
+import { sendPasswordReset,signInWithGoogle} from '../firebase'
+
+export default function ResetScreen({navigation}) {
 
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
 
-
- 
-    const handleSignIn = () => {
-        
-        /* app.auth()
-            .signInWithEmailAndPassword(email, password)
-            .then(() => {
-                console.log('Signed In!')
-                console.log(email, password)
-            })
-            .catch(error => console.log(error)) */
-        
-    } 
+     
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.small_container}>
-                <Text style={styles.title}>Login</Text>
+                <Text style={styles.title}>Reset Password</Text>
                 <View style={styles.input_container}>
                     <TextInput
                         label="Email"
@@ -34,23 +22,12 @@ export default function LoginScreen({navigation}) {
                         onChangeText={email => setEmail(email)}
                         left={<TextInput.Icon icon="at" />}
                     />
-                    <View styles={styles.password_container}>
-                        <TextInput
-                            label="Password"
-                            value={password}
-                            onChangeText={password => setPassword(password)}
-                            secureTextEntry
-                            left={<TextInput.Icon icon="lock-outline" />}
-                        />
-                        <TouchableRipple onPress={() => {navigation.navigate('Reset')}}>
-                            <Text style={styles.text}>Forgot password?</Text>
-                        </TouchableRipple>
-                    </View>
-                </View>
-                <Button mode="contained" onPress={()=> logInWithEmailAndPassword(email,password, navigation)   }>
-                    Login
+
+                <Button mode="contained" onPress={()=>sendPasswordReset(email)}>
+                    Send reset password email
                 </Button>
-                
+           
+                </View>
                     
                 <Text style={{alignSelf:'center'}}>or</Text>
                 <Button mode="outlined" onPress={() => navigation.navigate('Register')}>
@@ -64,7 +41,7 @@ export default function LoginScreen({navigation}) {
                             uri: "https://i.ibb.co/j82DCcR/search.png",
                         }}
                     />
-                    <Button style={styles.googleButtonText} onPress={() => signInWithGoogle(navigation)}>Login with Google</Button>
+                    <Button style={styles.googleButtonText} onPress={signInWithGoogle}>Register with Google</Button>
                    
                 </TouchableOpacity>
             </View>
@@ -73,6 +50,7 @@ export default function LoginScreen({navigation}) {
         </SafeAreaView>
     )
 }
+
 
 const styles = StyleSheet.create({
     container: {
