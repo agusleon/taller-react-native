@@ -11,7 +11,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import TopBar from '../components/TopBar'
-import { profileInfo} from '../firebase'
+import app from '../firebase'
 
 
 const ProfileScreen = ({navigation}) => {
@@ -38,7 +38,7 @@ const ProfileScreen = ({navigation}) => {
         <View style={styles.userInfoSection}>
           <View style={styles.row}>
             <Ionicons name="mail" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{profileInfo}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{app.auth().currentUser.email}</Text>
           </View>
           <View style={styles.row}>
             <Ionicons name="add" color="#777777" size={20}/>

@@ -1,9 +1,8 @@
 import  React, {useState} from 'react';
-import { StyleSheet, View, SafeAreaView, TouchableOpacity,
-    Image} from 'react-native';
+import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, Button} from 'react-native-paper';
+import app from '../firebase'
 
-import {signInWithGoogle,registerWithEmailAndPassword}  from '../firebase';
 
 export default function RegisterScreen({navigation}) {
 
@@ -11,22 +10,17 @@ export default function RegisterScreen({navigation}) {
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
     const [disabledRegister, setDisabledRegister] = useState(true)
-    
-    /*
-       const handleCreateAccount = () => {
-       
-       /*app.auth()
+
+    const handleCreateAccount = () => {
+        app.auth()
             .createUserWithEmailAndPassword(email, password)
             .then(() => {
                 console.log('Account created')
                 console.log(email, password)
             })
             .catch(error => console.log(error))
-        navigation.navigate('Onboarding') 
-    } */
-
-
-
+        navigation.navigate('Onboarding')
+    }
 
     const checkConfirmedPassword = (confirmed) => {
         if (confirmed != password) {
@@ -74,32 +68,16 @@ export default function RegisterScreen({navigation}) {
                             left={<TextInput.Icon icon="lock-outline" />}
                             />
                     </View>
-                  
                     {disabledRegister ? (
                         <Text style={{color:'red'}}>
-                        Passwords do not match
-                    </Text>
-                       
-                        ) :  <Text></Text>
-                        
+                            Passwords do not match
+                        </Text>
+                        ) :  
+                        <Text></Text>
                     }
-                    <Button mode="outlined" disabled={disabledRegister} onPress={()=>registerWithEmailAndPassword(username, email, password,navigation)}>
+                    <Button mode="outlined" disabled={disabledRegister} onPress={handleCreateAccount}>
                         Register here
                     </Button>
-                
-                    <TouchableOpacity style={styles.googleButton}>
-                    <Image
-                        style={styles.googleIcon}
-                        source={{
-                            uri: "https://i.ibb.co/j82DCcR/search.png",
-                        }}
-                    />
-                    <Button style={styles.googleButtonText} onPress={()=>signInWithGoogle(navigation)}>Register with Google</Button>
-                   
-                    </TouchableOpacity>
-                    
-                    
-               
                 </View>
         </SafeAreaView>
     )
@@ -143,23 +121,4 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#20315f',
     },
-    googleButtonText:{
-        marginLeft: 16,
-        fontSize: 18,
-        fontWeight: '600'
-    },
-    googleIcon: {
-        height: 24,
-        width: 24
-    },
-    googleButton: {
-    backgroundColor: "white",
-    borderRadius: 4,
-    paddingHorizontal: 34,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center'
-    },
-  
 })

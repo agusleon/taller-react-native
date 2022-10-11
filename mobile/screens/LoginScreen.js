@@ -1,8 +1,9 @@
 import  React, {useState} from 'react';
-import { StyleSheet, View, SafeAreaView,TouchableOpacity,Image} from 'react-native';
+import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
 
-import { signInWithGoogle,logInWithEmailAndPassword} from '../firebase'
+import app from '../firebase'
+
 
 export default function LoginScreen({navigation}) {
 
@@ -10,18 +11,17 @@ export default function LoginScreen({navigation}) {
     const [password, setPassword] = useState('')
 
 
- 
     const handleSignIn = () => {
-        
-        /* app.auth()
+                
+        app.auth()
             .signInWithEmailAndPassword(email, password)
             .then(() => {
                 console.log('Signed In!')
                 console.log(email, password)
             })
-            .catch(error => console.log(error)) */
-        
-    } 
+            .catch(error => console.log(error))
+            navigation.navigate('App')
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -42,31 +42,18 @@ export default function LoginScreen({navigation}) {
                             secureTextEntry
                             left={<TextInput.Icon icon="lock-outline" />}
                         />
-                        <TouchableRipple onPress={() => {navigation.navigate('Reset')}}>
+                        <TouchableRipple onPress={() => {}}>
                             <Text style={styles.text}>Forgot password?</Text>
                         </TouchableRipple>
                     </View>
                 </View>
-                <Button mode="contained" onPress={()=> logInWithEmailAndPassword(email,password, navigation)   }>
+                <Button mode="contained" onPress={handleSignIn}>
                     Login
                 </Button>
-                
-                    
                 <Text style={{alignSelf:'center'}}>or</Text>
                 <Button mode="outlined" onPress={() => navigation.navigate('Register')}>
-                    Dont have an account? Register here!
+                    Register here
                 </Button>
-
-                <TouchableOpacity style={styles.googleButton}>
-                    <Image
-                        style={styles.googleIcon}
-                        source={{
-                            uri: "https://i.ibb.co/j82DCcR/search.png",
-                        }}
-                    />
-                    <Button style={styles.googleButtonText} onPress={() => signInWithGoogle(navigation)}>Login with Google</Button>
-                   
-                </TouchableOpacity>
             </View>
             
             
@@ -112,23 +99,4 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#20315f',
     },
-    googleButtonText:{
-        marginLeft: 16,
-        fontSize: 18,
-        fontWeight: '600'
-    },
-    googleIcon: {
-        height: 24,
-        width: 24
-    },
-    googleButton: {
-    backgroundColor: "white",
-    borderRadius: 4,
-    paddingHorizontal: 34,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center'
-    },
-  
 })
