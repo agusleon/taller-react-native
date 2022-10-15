@@ -1,26 +1,125 @@
-import * as app from 'firebase';
-import {REACT_APP_FIREBASE_API_KEY} from '@env';
-//import {initializeApp} from 'firebase/app'
-// import {auth} from 'firebase/app'
-//import firebase from 'firebase'
+import { initializeApp } from 'firebase/app';
+import {
+  // GoogleAuthProvider,
+  getAuth,
+  // signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  // sendPasswordResetEmail,
+  signOut,
 
+} from 'firebase/auth';
+import {
+  getFirestore,
+  // query,
+  // getDocs,
+  collection,
+  // where,
+  addDoc,
+} from "firebase/firestore";
  
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig =  {
-  apiKey: {REACT_APP_FIREBASE_API_KEY}.REACT_APP_FIREBASE_API_KEY,
-  authDomain: "fiuber-login.firebaseapp.com",
-  projectId:"fiuber-login",
-  storageBucket: "fiuber-login.appspot.com",
-  messagingSenderId:"678449995672",
-  appId:"1:678449995672:web:d553512c7f6347f4f095ed"
-
+const firebaseConfig = {
+  apiKey: "AIzaSyCo1TynEo7rDo3J0vlU6OlksN-TBuiVGhA",
+  authDomain: "fiuber-grupo10.firebaseapp.com",
+  projectId: "fiuber-grupo10",
+  storageBucket: "fiuber-grupo10.appspot.com",
+  messagingSenderId: "387389293972",
+  appId: "1:387389293972:web:592d75bc6feff46965fb81",
+  measurementId: "G-4VRCNS3V2J"
 };
-//const Firebase = firebase.initializeApp(firebaseConfig)
 
-//export default Firebase
-//const app = app.initializeApp(firebaseConfig);
-app.initializeApp(firebaseConfig);
-export default app;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// const googleProvider = new GoogleAuthProvider();
+// const signInWithGoogle = async(navigation)=>{
+//   try {
+//     const res = await signInWithPopup(auth, googleProvider);
+//     navigation.navigate('App')
+//     const user = res.user;
+//     const q = query(collection(db, "users"), where("uid", "==", user.uid));
+//     const docs = await getDocs(q);
+//     if (docs.docs.length === 0) {
+//       await addDoc(collection(db, "users"), {
+//         uid: user.uid,
+//         name: user.displayName,
+//         authProvider: "google",
+//         email: user.email,
+//       });
+//     }
+    
+//   } catch (err) {
+//     console.error(err);
+//     alert(err.message);
+//   }
+// };
+
+// const sendPasswordReset = async (email) => {
+//   try {
+//     await sendPasswordResetEmail(auth, email);
+//     alert("Password reset link sent!");
+//   } catch (err) {
+//     console.error(err);
+//     alert(err.message);
+//   }
+// };
+
+const logout = () => {
+  signOut(auth);
+};
+
+const profileInfo = () => {
+  return auth.currentUser.email
+  
+};
+
+const logInWithEmailAndPassword = async (email, password) => {
+  
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
+
+const registerDriverWithEmailAndPassword = async (name, email, password, licensePlate, carModel, role) => {
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    const user = res.user;
+    await addDoc(collection(db, "users"), {
+      uid: user.uid,
+      name,
+      roles: [role],
+      licensePlate,
+      carModel,
+      authProvider: "local",
+      email,
+    });
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
+
+const registerPassengerWithEmailAndPassword = async (name, email, password, address, role) => {
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    const user = res.user;
+    await addDoc(collection(db, "users"), {
+      uid: user.uid,
+      name,
+      roles: [role],
+      address,
+      authProvider: "local",
+      email,
+    });
+    
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+    
+  }
+};
+export  {profileInfo, auth, app, logout, logInWithEmailAndPassword, registerPassengerWithEmailAndPassword, registerDriverWithEmailAndPassword};

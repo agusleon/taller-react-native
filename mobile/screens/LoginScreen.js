@@ -1,27 +1,27 @@
-import  React, {useState} from 'react';
+/* eslint-disable no-unused-vars */
+import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
+import { auth, logInWithEmailAndPassword } from '../firebase';
+import { FiuberContext } from '../context/FiuberContext';
 
-import app from '../firebase'
 
 
 export default function LoginScreen({navigation}) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const {loggedIn, setLoggedIn, role, setRole} = useContext(FiuberContext);
 
-
-    const handleSignIn = () => {
-                
-        app.auth()
-            .signInWithEmailAndPassword(email, password)
-            .then(() => {
-                console.log('Signed In!')
-                console.log(email, password)
-            })
-            .catch(error => console.log(error))
-            navigation.navigate('App')
-    }
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+          if (user) {
+            setLoggedIn(true)
+          }
+        })
+    
+        return unsubscribe
+      }, [])
 
     return (
         <SafeAreaView style={styles.container}>
@@ -47,11 +47,11 @@ export default function LoginScreen({navigation}) {
                         </TouchableRipple>
                     </View>
                 </View>
-                <Button mode="contained" onPress={handleSignIn}>
+                <Button mode="contained" onPress={() => logInWithEmailAndPassword(email, password)}>
                     Login
                 </Button>
                 <Text style={{alignSelf:'center'}}>or</Text>
-                <Button mode="outlined" onPress={() => navigation.navigate('Register')}>
+                <Button mode="outlined" onPress={() => navigation.navigate('Onboarding')}>
                     Register here
                 </Button>
             </View>

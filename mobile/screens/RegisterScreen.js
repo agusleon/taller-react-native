@@ -1,7 +1,10 @@
-import  React, {useState} from 'react';
+/* eslint-disable no-unused-vars */
+import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, Button} from 'react-native-paper';
-import app from '../firebase'
+import {registerDriverWithEmailAndPassword, registerPassengerWithEmailAndPassword, registerWithEmailAndPassword} from '../firebase';
+import { FiuberContext } from '../context/FiuberContext';
+import { auth } from '../firebase';
 
 
 export default function RegisterScreen({navigation}) {
@@ -9,18 +12,22 @@ export default function RegisterScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
+    const [address, setAddress] = useState('')
+    const [licensePlate, setLicensePlate] = useState('')
+    const [carModel, setCarModel] = useState('')
     const [disabledRegister, setDisabledRegister] = useState(true)
 
-    const handleCreateAccount = () => {
-        app.auth()
-            .createUserWithEmailAndPassword(email, password)
-            .then(() => {
-                console.log('Account created')
-                console.log(email, password)
-            })
-            .catch(error => console.log(error))
-        navigation.navigate('Onboarding')
-    }
+    const {role, setLoggedIn} = useContext(FiuberContext);
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+          if (user) {
+            setLoggedIn(true)
+          }
+        })
+    
+        return unsubscribe
+      }, [])
 
     const checkConfirmedPassword = (confirmed) => {
         if (confirmed != password) {
@@ -31,6 +38,14 @@ export default function RegisterScreen({navigation}) {
             setDisabledRegister(false)
         }
         
+    }
+
+    const registerUser = () => {
+        if (role == 'driver') {
+            registerDriverWithEmailAndPassword(username, email, password, licensePlate, carModel, role)
+        } else {
+            registerPassengerWithEmailAndPassword(username, email, password, address, role)
+        }
     }
 
     return (
@@ -52,6 +67,32 @@ export default function RegisterScreen({navigation}) {
                             onChangeText={email => setEmail(email)}
                             left={<TextInput.Icon icon="at" />}
                             />
+                        {role === 'driver' ? 
+                            <View>
+                                <TextInput
+                                    label="License Plate"
+                                    value={licensePlate}
+                                    autoCapitalize='none'
+                                    onChangeText={licensePlate => setLicensePlate(licensePlate)}
+                                    left={<TextInput.Icon icon="numeric-1-box" />}
+                                    />
+                                <TextInput
+                                    label="Car Model"
+                                    value={carModel}
+                                    autoCapitalize='none'
+                                    onChangeText={carModel => setCarModel(carModel)}
+                                    left={<TextInput.Icon icon="car-outline" />}
+                                    />
+                            </View>
+                            :
+                            <TextInput
+                                label="Your address"
+                                value={address}
+                                autoCapitalize='none'
+                                onChangeText={address => setAddress(address)}
+                                left={<TextInput.Icon icon="home" />}
+                                />
+                        }
                         <TextInput
                             label="Password"
                             value={password}
@@ -75,8 +116,8 @@ export default function RegisterScreen({navigation}) {
                         ) :  
                         <Text></Text>
                     }
-                    <Button mode="outlined" disabled={disabledRegister} onPress={handleCreateAccount}>
-                        Register here
+                    <Button mode="outlined" disabled={disabledRegister} onPress={registerUser}>
+                        Register
                     </Button>
                 </View>
         </SafeAreaView>

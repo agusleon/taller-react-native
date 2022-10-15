@@ -1,6 +1,5 @@
 import { React } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import ProfileScreen from '../screens/ProfileScreen';
@@ -10,6 +9,7 @@ import CustomDrawer from '../components/CustomDrawer';
 const Drawer = createDrawerNavigator();
 
 const AppStack = () => {
+
     return (
         <Drawer.Navigator 
             drawerContent={props => <CustomDrawer {...props}/>} 
@@ -27,8 +27,8 @@ const AppStack = () => {
             <Drawer.Screen component={ProfileScreen} name="Profile" options={{
                 drawerIcon: ({color}) => (
                     <Ionicons name="person-outline" size={22} color={color}/>
-                )
-            }}/>
+                    )
+                }}/>
         </Drawer.Navigator>
     )
 }
