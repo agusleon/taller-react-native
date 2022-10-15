@@ -8,7 +8,7 @@ import { FiuberContext } from '../context/FiuberContext';
 
 const Router = () => {
     
-    const {loggedIn, setLoggedIn, role, setRole} = useContext(FiuberContext);
+    const {loggedIn} = useContext(FiuberContext);
 
     return (
     <NavigationContainer>

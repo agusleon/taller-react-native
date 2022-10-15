@@ -5,6 +5,7 @@ import { Text, TextInput, Button} from 'react-native-paper';
 import {registerDriverWithEmailAndPassword, registerPassengerWithEmailAndPassword, registerWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
+import GooglePlacesInput from '../components/GooglePlacesInput';
 
 
 export default function RegisterScreen({navigation}) {
@@ -12,39 +13,26 @@ export default function RegisterScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
-    const [address, setAddress] = useState('')
-    const [licensePlate, setLicensePlate] = useState('')
-    const [carModel, setCarModel] = useState('')
+    const [confirmedPassword, setConfirmedPassword] = useState('')
     const [disabledRegister, setDisabledRegister] = useState(true)
 
-    const {role, setLoggedIn} = useContext(FiuberContext);
+    const {role, setUser} = useContext(FiuberContext);
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-          if (user) {
-            setLoggedIn(true)
-          }
-        })
-    
-        return unsubscribe
-      }, [])
-
-    const checkConfirmedPassword = (confirmed) => {
-        if (confirmed != password) {
-            setDisabledRegister(true)
-
-        } else {
-            console.log("password match")
-            setDisabledRegister(false)
+    const registerUser = async () => {
+        const user = {
+            name:username,
+            email: email,
+            password: password,
+            jwt:'',
+            address: {name:'', description:'', latitude:0,longitude:0}
         }
-        
-    }
-
-    const registerUser = () => {
+        setUser(user)
         if (role == 'driver') {
-            registerDriverWithEmailAndPassword(username, email, password, licensePlate, carModel, role)
+            navigation.navigate('Driver')
+            //registerDriverWithEmailAndPassword(username, email, password, licensePlate, carModel, role)
         } else {
-            registerPassengerWithEmailAndPassword(username, email, password, address, role)
+            // const result = await registerPassengerWithEmailAndPassword(username, email, password, address, role);
+            navigation.navigate('Passenger')
         }
     }
 
@@ -67,32 +55,6 @@ export default function RegisterScreen({navigation}) {
                             onChangeText={email => setEmail(email)}
                             left={<TextInput.Icon icon="at" />}
                             />
-                        {role === 'driver' ? 
-                            <View>
-                                <TextInput
-                                    label="License Plate"
-                                    value={licensePlate}
-                                    autoCapitalize='none'
-                                    onChangeText={licensePlate => setLicensePlate(licensePlate)}
-                                    left={<TextInput.Icon icon="numeric-1-box" />}
-                                    />
-                                <TextInput
-                                    label="Car Model"
-                                    value={carModel}
-                                    autoCapitalize='none'
-                                    onChangeText={carModel => setCarModel(carModel)}
-                                    left={<TextInput.Icon icon="car-outline" />}
-                                    />
-                            </View>
-                            :
-                            <TextInput
-                                label="Your address"
-                                value={address}
-                                autoCapitalize='none'
-                                onChangeText={address => setAddress(address)}
-                                left={<TextInput.Icon icon="home" />}
-                                />
-                        }
                         <TextInput
                             label="Password"
                             value={password}
@@ -104,19 +66,19 @@ export default function RegisterScreen({navigation}) {
                         <TextInput
                             label="Confirm password"
                             autoCapitalize='none'
-                            onChangeText={confirmed => checkConfirmedPassword(confirmed)}
+                            onChangeText={confirmed => setConfirmedPassword(confirmed)}
                             secureTextEntry
                             left={<TextInput.Icon icon="lock-outline" />}
                             />
                     </View>
-                    {disabledRegister ? (
+                    {(password != confirmedPassword) ? (
                         <Text style={{color:'red'}}>
                             Passwords do not match
                         </Text>
                         ) :  
                         <Text></Text>
                     }
-                    <Button mode="outlined" disabled={disabledRegister} onPress={registerUser}>
+                    <Button mode="outlined" disabled={(password != confirmedPassword)} onPress={registerUser}>
                         Register
                     </Button>
                 </View>

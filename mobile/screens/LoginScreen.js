@@ -11,7 +11,7 @@ export default function LoginScreen({navigation}) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const {loggedIn, setLoggedIn, role, setRole} = useContext(FiuberContext);
+    const {setLoggedIn} = useContext(FiuberContext);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {

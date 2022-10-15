@@ -75,7 +75,6 @@ const profileInfo = () => {
 };
 
 const logInWithEmailAndPassword = async (email, password) => {
-  
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
@@ -115,11 +114,10 @@ const registerPassengerWithEmailAndPassword = async (name, email, password, addr
       authProvider: "local",
       email,
     });
-    
+
   } catch (err) {
     console.error(err);
     alert(err.message);
-    
   }
 };
 export  {profileInfo, auth, app, logout, logInWithEmailAndPassword, registerPassengerWithEmailAndPassword, registerDriverWithEmailAndPassword};

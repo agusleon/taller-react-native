@@ -1,14 +1,15 @@
 import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, StyleSheet, Dimensions } from 'react-native'
+import GooglePlacesInput from '../components/GooglePlacesInput'
+import Map from '../components/Map'
 import TopBar from '../components/TopBar'
 
 export default function HomeScreen ({navigation}) {
         return (
             <View style={styles.container}>
+                <Map/>
                 <TopBar {...navigation} />
-                <View style={styles.body}>
-                    <Text>Home</Text>
-                </View>
+                <GooglePlacesInput/>
             </View>
         )
     }
@@ -24,5 +25,9 @@ const styles = StyleSheet.create({
         height:'80%',
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    map: {
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
     }
 })
