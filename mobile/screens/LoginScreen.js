@@ -2,8 +2,11 @@
 import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
-import { auth, logInWithEmailAndPassword } from '../firebase';
+import { auth, db, logInWithEmailAndPassword } from '../firebase';
+import { query, collection, getDocs, where } from "firebase/firestore";
 import { FiuberContext } from '../context/FiuberContext';
+import { getUser } from '../services/users';
+import { getDefaultDestination } from '../services/trips'
 
 
 
@@ -11,12 +14,44 @@ export default function LoginScreen({navigation}) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const {setLoggedIn} = useContext(FiuberContext);
+    const [loading, setLoading] = useState(false);
+    const {setLoggedIn, setRole, setHasDefaultDestination, setUser, role} = useContext(FiuberContext);
+
+    const fetchUser = async (uid) => {
+        try {
+            const idTokenResult = await auth.currentUser.getIdTokenResult();
+            const user_response = await getUser(uid, idTokenResult.token);
+            const destination = await getDefaultDestination(idTokenResult.token,uid);
+            console.log(destination);
+            if (destination == ''){
+                setHasDefaultDestination(false);
+                console.log("Usuario no tiene default destination");
+            }
+            const user = {
+                uid: user_response.uid,
+                name: user_response.name,
+                email: user_response.email,
+                wallet: user_response.wallet,
+                password: password,
+                jwt: idTokenResult.token,
+            }
+            setUser(user)
+            setRole(user_response.roles[0])
+            setLoggedIn(true)
+            console.log("Usuario se loggeo correctamente: ",user, " con rol ", role);
+            
+        } catch (err) {
+            console.log("Error buscando el usuario");
+            alert(err.message);
+        }
+
+    };
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
           if (user) {
-            setLoggedIn(true)
+            setLoading(true);
+            fetchUser(user.uid);
           }
         })
     
@@ -47,6 +82,7 @@ export default function LoginScreen({navigation}) {
                         </TouchableRipple>
                     </View>
                 </View>
+                {loading ? <Text style={styles.text}>Loading...</Text> : <Text></Text>}
                 <Button mode="contained" onPress={() => logInWithEmailAndPassword(email, password)}>
                     Login
                 </Button>

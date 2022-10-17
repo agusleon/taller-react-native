@@ -17,7 +17,6 @@ export default function OnboardingScreen({navigation}) {
         <SafeAreaView style={styles.container}>
           <View>
             <Text style={styles.title}>FIUBER</Text>
-            <Text>{role}</Text>
           </View>
           <View  style={styles.small_container} >
             <Button style={styles.button} icon="chevron-right" mode="contained" onPress={() => registerRole('passenger')}>

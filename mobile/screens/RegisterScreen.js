@@ -2,10 +2,10 @@
 import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, Button} from 'react-native-paper';
-import {registerDriverWithEmailAndPassword, registerPassengerWithEmailAndPassword, registerWithEmailAndPassword} from '../firebase';
+import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
-import GooglePlacesInput from '../components/GooglePlacesInput';
+import { createUser } from '../services/users';
 
 
 export default function RegisterScreen({navigation}) {
@@ -13,27 +13,26 @@ export default function RegisterScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
+    const [wallet, setWallet] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
-    const [disabledRegister, setDisabledRegister] = useState(true)
 
     const {role, setUser} = useContext(FiuberContext);
 
     const registerUser = async () => {
-        const user = {
-            name:username,
-            email: email,
-            password: password,
-            jwt:'',
-            address: {name:'', description:'', latitude:0,longitude:0}
+        try {
+            await registerUserWithEmailAndPassword(username, email, password, role);
+            const idTokenResult = await auth.currentUser.getIdTokenResult();
+            const uid = auth.currentUser.uid;
+
+            console.log("Usuario creado en firebase con rol ", role, " y mail ", email);
+            const response = await createUser(username, wallet, role, uid, idTokenResult.token);
+            console.log("Usuario creado en base de datos con info ", response);
+            
+        } catch (error) {
+            console.log(error);
+            
         }
-        setUser(user)
-        if (role == 'driver') {
-            navigation.navigate('Driver')
-            //registerDriverWithEmailAndPassword(username, email, password, licensePlate, carModel, role)
-        } else {
-            // const result = await registerPassengerWithEmailAndPassword(username, email, password, address, role);
-            navigation.navigate('Passenger')
-        }
+        
     }
 
     return (
@@ -54,6 +53,13 @@ export default function RegisterScreen({navigation}) {
                             autoCapitalize='none'
                             onChangeText={email => setEmail(email)}
                             left={<TextInput.Icon icon="at" />}
+                            />
+                        <TextInput
+                            label="Wallet"
+                            value={wallet}
+                            autoCapitalize='none'
+                            onChangeText={wallet => setWallet(wallet)}
+                            left={<TextInput.Icon icon="bitcoin" />}
                             />
                         <TextInput
                             label="Password"
@@ -90,21 +96,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
     },
     small_container: {
         flexDirection: 'column',
-        height: '70%',
+        height: '80%',
         width: '80%',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-evenly',
     },
     input_container: {
         flexDirection: 'column',
         height: '60%',
         width: '100%',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-evenly',
     },
     password_container: {
         flexDirection: 'column',

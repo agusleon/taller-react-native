@@ -1,25 +1,29 @@
 import React from 'react';
-import { View } from 'react-native';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import Ionicons from '@expo/vector-icons/Ionicons';
 
-const GooglePlacesInput = ({placeholder, onPlaceSelected, style}) => {
+const GooglePlacesInput = ({placeholder, onPlaceSelected}) => {
   return (
-    <View style={style}>
-        <Ionicons name="location" size={30}/>
-        <GooglePlacesAutocomplete
-          placeholder={placeholder}
-          fetchDetails={true}
-          // styles={}
-          onPress={(data,details) => {
-            onPlaceSelected(details);
-          }}
-          query={{
-            key: 'AIzaSyCkRY5LLU7MR3J1XGHzJG9CXrvEypQpdJM',
-            language: 'en',
-          }}
-          />
-    </View>
+    <GooglePlacesAutocomplete
+      placeholder={placeholder}
+      fetchDetails={true}
+      styles={{
+        listView: {position:'absolute',zIndex: 100, elevation: 3, top: 30, paddingHorizontal: 15, height:100},
+        textInputContainer: {
+          flex: 1,
+          width: '100%',
+          justifyContent: 'center',
+          zIndex: 100,
+          paddingHorizontal: 15,     
+        }
+      }}
+      onPress={(data,details) => {
+        onPlaceSelected(details);
+      }}
+      query={{
+        key: 'AIzaSyCkRY5LLU7MR3J1XGHzJG9CXrvEypQpdJM',
+        language: 'en',
+      }}
+      />
   );
 };
 

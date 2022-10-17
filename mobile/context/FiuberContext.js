@@ -7,28 +7,34 @@ const ContextProvider = ({children}) => {
 
     const userAuth = {
         name:'',
+        uid:'',
         email:'',
         password:'',
+        wallet:'',
         jwt:'',
-        address: {
-            name:'',
-            description:'',
-            latitude:0,
-            longitude:0,
-        }
+    }
+
+    const address = {
+        description:'',
+        longitude:0,
+        latitude:0
     }
 
     const [loggedIn, setLoggedIn] = React.useState(false);
-    const [registrationCompleted, setRegistrationCompleted] = React.useState(false);
     const [role, setRole] = React.useState('');
     const [user, setUser] = React.useState(userAuth);
+    const [currentDestination, setCurrentDestination] = React.useState(address);
+    const [defaultDestination, setDefaultDestination] = React.useState('');
+    const [hasDefaultDestination, setHasDefaultDestination] = React.useState(false);
 
     return(
         <FiuberContext.Provider value={{
             role,setRole,
             loggedIn, setLoggedIn,
-            registrationCompleted, setRegistrationCompleted,
-            user, setUser
+            user, setUser,
+            currentDestination, setCurrentDestination,
+            defaultDestination, setDefaultDestination,
+            hasDefaultDestination, setHasDefaultDestination
         }}>
             {children}
         </FiuberContext.Provider>

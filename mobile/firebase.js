@@ -13,9 +13,7 @@ import {
   getFirestore,
   // query,
   // getDocs,
-  collection,
   // where,
-  addDoc,
 } from "firebase/firestore";
  
 const firebaseConfig = {
@@ -83,41 +81,52 @@ const logInWithEmailAndPassword = async (email, password) => {
   }
 };
 
-const registerDriverWithEmailAndPassword = async (name, email, password, licensePlate, carModel, role) => {
+// const registerDriverWithEmailAndPassword = async (name, email, password, licensePlate, carModel, role) => {
+//   try {
+//     const res = await createUserWithEmailAndPassword(auth, email, password);
+//     const user = res.user;
+//     await addDoc(collection(db, "users"), {
+//       uid: user.uid,
+//       name,
+//       roles: [role],
+//       licensePlate,
+//       carModel,
+//       authProvider: "local",
+//       email,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     alert(err.message);
+//   }
+// };
+
+// const registerPassengerWithEmailAndPassword = async (name, email, password, address, role) => {
+//   try {
+//     const res = await createUserWithEmailAndPassword(auth, email, password);
+//     const user = res.user;
+//     await addDoc(collection(db, "users"), {
+//       uid: user.uid,
+//       name,
+//       roles: [role],
+//       address,
+//       authProvider: "local",
+//       email,
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     alert(err.message);
+//   }
+// };
+
+const registerUserWithEmailAndPassword = async (name, email, password) => {
   try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    const user = res.user;
-    await addDoc(collection(db, "users"), {
-      uid: user.uid,
-      name,
-      roles: [role],
-      licensePlate,
-      carModel,
-      authProvider: "local",
-      email,
-    });
+    await createUserWithEmailAndPassword(auth, email, password);
   } catch (err) {
     console.error(err);
-    alert(err.message);
+    alert("error1",err.message);
   }
 };
 
-const registerPassengerWithEmailAndPassword = async (name, email, password, address, role) => {
-  try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    const user = res.user;
-    await addDoc(collection(db, "users"), {
-      uid: user.uid,
-      name,
-      roles: [role],
-      address,
-      authProvider: "local",
-      email,
-    });
 
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-export  {profileInfo, auth, app, logout, logInWithEmailAndPassword, registerPassengerWithEmailAndPassword, registerDriverWithEmailAndPassword};
+export  {profileInfo, auth, app, db, logout, logInWithEmailAndPassword, registerUserWithEmailAndPassword};
