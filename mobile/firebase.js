@@ -5,7 +5,7 @@ import {
   // signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  // sendPasswordResetEmail,
+  sendPasswordResetEmail,
   signOut,
 
 } from 'firebase/auth';
@@ -31,21 +31,22 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // const googleProvider = new GoogleAuthProvider();
-// const signInWithGoogle = async(navigation)=>{
+
+// const signInWithGoogle = async()=>{
 //   try {
 //     const res = await signInWithPopup(auth, googleProvider);
-//     navigation.navigate('App')
+//     // navigation.navigate('App')
 //     const user = res.user;
-//     const q = query(collection(db, "users"), where("uid", "==", user.uid));
-//     const docs = await getDocs(q);
-//     if (docs.docs.length === 0) {
-//       await addDoc(collection(db, "users"), {
-//         uid: user.uid,
-//         name: user.displayName,
-//         authProvider: "google",
-//         email: user.email,
-//       });
-//     }
+//     // const q = query(collection(db, "users"), where("uid", "==", user.uid));
+//     // const docs = await getDocs(q);
+//     // if (docs.docs.length === 0) {
+//     //   await addDoc(collection(db, "users"), {
+//     //     uid: user.uid,
+//     //     name: user.displayName,
+//     //     authProvider: "google",
+//     //     email: user.email,
+//     //   });
+//     // }
     
 //   } catch (err) {
 //     console.error(err);
@@ -53,15 +54,15 @@ const db = getFirestore(app);
 //   }
 // };
 
-// const sendPasswordReset = async (email) => {
-//   try {
-//     await sendPasswordResetEmail(auth, email);
-//     alert("Password reset link sent!");
-//   } catch (err) {
-//     console.error(err);
-//     alert(err.message);
-//   }
-// };
+const sendPasswordReset = async (email) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Password reset link sent!");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
 
 const logout = () => {
   signOut(auth);
@@ -81,44 +82,6 @@ const logInWithEmailAndPassword = async (email, password) => {
   }
 };
 
-// const registerDriverWithEmailAndPassword = async (name, email, password, licensePlate, carModel, role) => {
-//   try {
-//     const res = await createUserWithEmailAndPassword(auth, email, password);
-//     const user = res.user;
-//     await addDoc(collection(db, "users"), {
-//       uid: user.uid,
-//       name,
-//       roles: [role],
-//       licensePlate,
-//       carModel,
-//       authProvider: "local",
-//       email,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     alert(err.message);
-//   }
-// };
-
-// const registerPassengerWithEmailAndPassword = async (name, email, password, address, role) => {
-//   try {
-//     const res = await createUserWithEmailAndPassword(auth, email, password);
-//     const user = res.user;
-//     await addDoc(collection(db, "users"), {
-//       uid: user.uid,
-//       name,
-//       roles: [role],
-//       address,
-//       authProvider: "local",
-//       email,
-//     });
-
-//   } catch (err) {
-//     console.error(err);
-//     alert(err.message);
-//   }
-// };
-
 const registerUserWithEmailAndPassword = async (name, email, password) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
@@ -129,4 +92,4 @@ const registerUserWithEmailAndPassword = async (name, email, password) => {
 };
 
 
-export  {profileInfo, auth, app, db, logout, logInWithEmailAndPassword, registerUserWithEmailAndPassword};
+export  {profileInfo, auth, app, db, logout, logInWithEmailAndPassword, registerUserWithEmailAndPassword, sendPasswordReset};

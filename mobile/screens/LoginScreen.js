@@ -21,11 +21,13 @@ export default function LoginScreen({navigation}) {
         try {
             const idTokenResult = await auth.currentUser.getIdTokenResult();
             const user_response = await getUser(uid, idTokenResult.token);
-            const destination = await getDefaultDestination(idTokenResult.token,uid);
+            const destination = await getDefaultDestination(idTokenResult.token);
             console.log(destination);
             if (destination == ''){
                 setHasDefaultDestination(false);
                 console.log("Usuario no tiene default destination");
+            } else {
+                setHasDefaultDestination(true);
             }
             const user = {
                 uid: user_response.uid,

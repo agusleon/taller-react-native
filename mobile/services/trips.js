@@ -1,5 +1,5 @@
 
-const createDestination = async (jwt, address, longitude, latitude) => {
+const createDefaultDestination = async (jwt, address, longitude, latitude) => {
 
     const body = JSON.stringify({
         address,
@@ -7,10 +7,8 @@ const createDestination = async (jwt, address, longitude, latitude) => {
         longitude
     });
 
-    console.log("Sending this body: ",body);
-    const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations';
+    const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations/';
     const bearer = 'Bearer '+jwt;
-    console.log("with authentication ",bearer);
     try {
         const response = await fetch(url,
         {
@@ -23,7 +21,6 @@ const createDestination = async (jwt, address, longitude, latitude) => {
             },
         });
         const json = await response.json();
-        console.log("Receiving this json: ",json);
         return json;
     } catch (err) {
       console.error(err);
@@ -31,13 +28,39 @@ const createDestination = async (jwt, address, longitude, latitude) => {
     }
   };
 
-const getDefaultDestination = async (jwt,uid) => {
+  const createCustomDestination = async (jwt, address, name) => {
 
-    const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations/'+uid;
+    const body = JSON.stringify({
+        address,
+        custom_name:name,
+    });
+    console.log(body);
+    const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations/name';
     const bearer = 'Bearer '+jwt;
-    const not_found = {
-        detail:"Not Found"
+    try {
+        const response = await fetch(url,
+        {
+            method:'POST',
+            body:body,
+            headers: {
+                'Authorization': bearer,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        });
+        const json = await response.json();
+        return json;
+    } catch (err) {
+      console.error(err);
+      alert("error",err.message);
     }
+  };
+
+const getDefaultDestination = async (jwt) => {
+
+    const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations/';
+    const bearer = 'Bearer '+jwt;
+
     try {
         const response = await fetch(url,
         {
@@ -49,7 +72,7 @@ const getDefaultDestination = async (jwt,uid) => {
               },
         });
         const json = await response.json();
-        if (json.detail == not_found.detail){
+        if (json.detail){
             return '';
         }
         return json;
@@ -60,4 +83,4 @@ const getDefaultDestination = async (jwt,uid) => {
 
 };
 
-export {createDestination, getDefaultDestination}
+export {createDefaultDestination, getDefaultDestination, createCustomDestination}

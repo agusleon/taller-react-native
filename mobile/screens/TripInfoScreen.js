@@ -1,9 +1,11 @@
 import { StyleSheet,View} from 'react-native'
 import TopBar from '../components/TopBar'
-import React, {useState} from 'react'
-import { Button, TouchableRipple, Text } from 'react-native-paper'
+import React, {useState, useContext} from 'react'
+import { Button, TouchableRipple, Text, TextInput } from 'react-native-paper'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import GooglePlacesInput from '../components/GooglePlacesInput';
+import { createCustomDestination } from '../services/trips';
+import { FiuberContext } from '../context/FiuberContext';
 // import { FiuberContext } from '../context/FiuberContext';
 
 const TripInfoScreen = ({navigation}) => {
@@ -14,8 +16,9 @@ const TripInfoScreen = ({navigation}) => {
         latitude: '',
         longitude: ''
     }
-
+    const [name,setName] = useState('');
     const [destination, setDestination] = useState(address);
+    const {user} = useContext(FiuberContext);
 
     // useEffect(() => {
     //     // make get call to retrieve already saved destinations
@@ -32,21 +35,40 @@ const TripInfoScreen = ({navigation}) => {
         console.log("Se seteo un viaje a ",destination)
     }
 
-    const saveAddress = () => {
-        // make api call to create destination
+    const saveAddress = async () => {
+        try {
+            const response = await createCustomDestination(user.jwt, destination.description, name);
+            if (response.detail){
+                console.log(response);
+                console.log("No se pudo agregar la custom destination");
+                alert("No se pudo agregar la destination");
+            } else {
+                console.log("Custom destination creada correctamente: ",response);
+            }
+        } catch(err){
+            console.log("No se pudo agregar la custom destination");
+        }
     }
 
     return (
         <View style={styles.container}>
             <TopBar {...navigation} />
             <View style={styles.small_container}>
+                <Text style={styles.title}>Where to?</Text>
                 <View style={styles.address_container}>
                     <GooglePlacesInput placeholder='Destination' onPlaceSelected={(details) => onPlaceSelected(details)}/>
+                    <TextInput
+                            label="Give it a name"
+                            value={name}
+                            autoCapitalize='none'
+                            onChangeText={name => setName(name)}
+                            left={<TextInput.Icon icon="home" />}
+                        />
                     <TouchableRipple onPress={saveAddress}>
-                            <View style={styles.favorite}>
-                                <Ionicons name="heart-outline" color="#FF6347" size={25}/>
-                                <Text style={styles.menuItemText}>Make it a favorite</Text>
-                            </View>
+                        <View style={styles.favorite}>
+                            <Ionicons name="heart-outline" color="#FF6347" size={25}/>
+                            <Text style={styles.menuItemText}>Make it a favorite</Text>
+                        </View>
                     </TouchableRipple>
                 </View>
             </View>
@@ -82,6 +104,11 @@ const styles = StyleSheet.create({
         height:'40%',
         width:'100%'
     },
+    title: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        color: '#20315f'
+    },
     address_container: {
         padding:8,
         backgroundColor:'white',
@@ -90,8 +117,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         elevation:3,
         borderRadius: 8,  
-        height:100,
+        height:180,
         width:'90%',
+        flexDirection:'column',
+        justifyContent:'space-evenly'
     },
     trip_button: {
         width:'40%',

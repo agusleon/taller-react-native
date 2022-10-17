@@ -3,7 +3,7 @@ import { Button, Text} from 'react-native-paper'
 import React, {useContext, useState} from 'react'
 import GooglePlacesInput from './GooglePlacesInput'
 import { FiuberContext } from '../context/FiuberContext'
-import { createDestination } from '../services/trips'
+import { createDefaultDestination } from '../services/trips'
 
 const DefaultDestination = () => {
 
@@ -18,7 +18,7 @@ const DefaultDestination = () => {
 
     const handleSave = async () => {
         try {
-            const destination = await createDestination(user.jwt, address.description, address.longitude, address.latitude);
+            const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
             console.log("Se creo la default destination correctamente: ",destination);
             setHasDefaultDestination(true);
             setDefaultDestination(destination);

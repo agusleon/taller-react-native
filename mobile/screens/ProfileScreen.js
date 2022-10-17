@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {View, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Avatar,
@@ -12,12 +12,25 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
+import { getDefaultDestination } from '../services/trips';
 
 
 const ProfileScreen = ({navigation}) => {
 
-
+    
     const {user, role} = useContext(FiuberContext);
+    const [destination, setDestination] = useState('');
+
+    useEffect(() => {
+      async function fetchDestination(){
+        const response = await getDefaultDestination(user.jwt);
+        if (!response.detail){
+          setDestination(response.address)
+        }
+      }
+      
+      fetchDestination();
+    }, [])
 
     return (
       <SafeAreaView style={styles.container}>
@@ -47,8 +60,8 @@ const ProfileScreen = ({navigation}) => {
             <Text style={{color:"#777777", marginLeft: 20}}>{role}</Text>
           </View>
           <View style={styles.row}>
-            <Ionicons name="add" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>other property</Text>
+            <Ionicons name="heart-outline" color="#777777" size={20}/>
+            <Text style={{color:"#777777", marginLeft: 20}}>{destination}</Text>
           </View>
         </View>
   
@@ -70,7 +83,7 @@ const ProfileScreen = ({navigation}) => {
           <TouchableRipple onPress={() => {}}>
             <View style={styles.menuItem}>
               <Ionicons name="heart-outline" color="#FF6347" size={25}/>
-              <Text style={styles.menuItemText}>Favorite Destinations</Text>
+              <Text style={styles.menuItemText}>My Destinations</Text>
             </View>
           </TouchableRipple>
           <TouchableRipple onPress={() => {navigation.navigate('Wallet')}}>
