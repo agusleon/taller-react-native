@@ -14,6 +14,15 @@ const ContextProvider = ({children}) => {
         jwt:'',
     }
 
+    const [destinations, setDestinations] = React.useState([
+        {
+          address:'',
+          custom_name:'',
+          latitude: 0,
+          longitude: 0
+        }
+      ]);
+
     const address = {
         description:'',
         longitude:0,
@@ -34,7 +43,8 @@ const ContextProvider = ({children}) => {
             user, setUser,
             currentDestination, setCurrentDestination,
             defaultDestination, setDefaultDestination,
-            hasDefaultDestination, setHasDefaultDestination
+            hasDefaultDestination, setHasDefaultDestination,
+            destinations, setDestinations
         }}>
             {children}
         </FiuberContext.Provider>

@@ -1,19 +1,13 @@
-import { StyleSheet, View, FlatList, SafeAreaView} from 'react-native';
+import { StyleSheet, View, FlatList, ScrollView} from 'react-native';
 import {Button, Text} from 'react-native-paper';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 import { getFavoriteDestinations } from '../services/trips';
 import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
 
 const FavoriteDestinationsScreen = ({navigation}) => {
 
-    const [destinations, setDestinations] = useState([
-      {
-        address:'',
-        custom_name:''
-      }
-    ]);
-    const {user} = useContext(FiuberContext);
+    const {user, destinations, setDestinations} = useContext(FiuberContext);
 
     const ListEmptyComponent=()=> {
       return (
@@ -23,12 +17,22 @@ const FavoriteDestinationsScreen = ({navigation}) => {
       );
     }
 
+    // const handlePressGo = (item) => {
+    //   const destination = {
+    //     description:item.address,
+    //     latitude:item.latitude,
+    //     longitude:item.longitude
+    //   }
+    //   setCurrentDestination(destination)
+    //   navigation.navigate('Home');
+    // }
+
     const renderItem=({item})=>{
       return (
           <View style={styles.destination_container}>
             <Text style={styles.title}>{item.custom_name}</Text>
             <Text style={styles.content}>{item.address}</Text>
-            <Button style={styles.trip_button} mode='contained' onPress={() => {navigation.navigate('Home')}}>Go</Button>
+            <Button style={styles.trip_button} mode='contained' onPress={()=>navigation.navigate('Home')}>Go</Button>
           </View>
       )
     }
@@ -44,18 +48,22 @@ const FavoriteDestinationsScreen = ({navigation}) => {
         }
         
         fetchDestination();
-      })
+      }, [])
+
     
     return (
-      <SafeAreaView style={styles.container}>
-        <FlatList 
-          renderItem={renderItem}
-          data={destinations} 
-          contentContainerStyle={styles.list_container}
-          keyExtractor={(item) => String(item.address)}
-          ListEmptyComponent={ListEmptyComponent}/>
-        <TopBar {...navigation} />    
-      </SafeAreaView>
+      <View>
+        <ScrollView contentContainerStyle={styles.container}>
+          <FlatList 
+            renderItem={renderItem}
+            data={destinations} 
+            contentContainerStyle={styles.list_container}
+            keyExtractor={(item) => String(item.address)}
+            ListEmptyComponent={ListEmptyComponent}/> 
+        </ScrollView>
+        <TopBar {...navigation} />   
+      </View>
+
     )
 }
 
@@ -63,7 +71,6 @@ export default FavoriteDestinationsScreen
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center'

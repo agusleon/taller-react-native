@@ -29,6 +29,9 @@ export default function HomeScreen ({navigation}) {
                     Make Trip
                 </Button>
             }
+            {/* <Button style={styles.trip_button} mode="contained" onPress={handleTripButton}>
+                Reload
+            </Button>    */}
         </View>
     )
 }

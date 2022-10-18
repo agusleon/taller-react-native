@@ -14,13 +14,14 @@ const DefaultDestination = () => {
     }
 
     const [address, setAddres] = useState(address_default);
-    const {setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
+    const {setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
 
     const handleSave = async () => {
         try {
             const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
             console.log("Se creo la default destination correctamente: ",destination);
             setHasDefaultDestination(true);
+            setCurrentDestination(destination);
             setDefaultDestination(destination);
         } catch (err) {
             console.log("No se pudo crear la default destination del usuario");

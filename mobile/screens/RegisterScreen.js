@@ -18,7 +18,7 @@ export default function RegisterScreen({navigation}) {
     const [loading, setLoading] = useState(false);
     const [confirmedPassword, setConfirmedPassword] = useState('')
 
-    const {role, setUser, setHasDefaultDestination, setDefaultDestination, setLoggedIn} = useContext(FiuberContext);
+    const {role, setUser, setHasDefaultDestination, setCurrentDestination, setLoggedIn} = useContext(FiuberContext);
 
     const handleRegister = async () => {
         setLoading(true);
@@ -43,7 +43,7 @@ export default function RegisterScreen({navigation}) {
                         longitude:destination.longitude,
                         latitude:destination.latitude
                     }
-                    setDefaultDestination(default_destination);
+                    setCurrentDestination(default_destination);
                 }
             }
             const user = {

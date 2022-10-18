@@ -2,7 +2,7 @@
 import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
-import { auth, db, logInWithEmailAndPassword } from '../firebase';
+import { auth, db, logInWithEmailAndPassword, sendPasswordReset } from '../firebase';
 import { query, collection, getDocs, where } from "firebase/firestore";
 import { FiuberContext } from '../context/FiuberContext';
 import { getUser } from '../services/users';
@@ -15,7 +15,7 @@ export default function LoginScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false);
-    const {setLoggedIn, setRole, setHasDefaultDestination, setDefaultDestination, setUser, role} = useContext(FiuberContext);
+    const {setLoggedIn, setRole, setHasDefaultDestination, setDefaultDestination, setCurrentDestination, setUser, role} = useContext(FiuberContext);
 
     const handleLogin = async () => {
         setLoading(true);
@@ -36,6 +36,7 @@ export default function LoginScreen({navigation}) {
                     longitude:destination.longitude,
                     latitude:destination.latitude
                 }
+                setCurrentDestination(default_destination);
                 setDefaultDestination(default_destination);
             }
             const user = {
@@ -75,7 +76,7 @@ export default function LoginScreen({navigation}) {
                             secureTextEntry
                             left={<TextInput.Icon icon="lock-outline" />}
                         />
-                        <TouchableRipple onPress={() => {}}>
+                        <TouchableRipple onPress={() => {sendPasswordReset(email)}}>
                             <Text style={styles.text}>Forgot password?</Text>
                         </TouchableRipple>
                     </View>
