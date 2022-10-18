@@ -24,7 +24,7 @@ const ContextProvider = ({children}) => {
     const [role, setRole] = React.useState('');
     const [user, setUser] = React.useState(userAuth);
     const [currentDestination, setCurrentDestination] = React.useState(address);
-    const [defaultDestination, setDefaultDestination] = React.useState('');
+    const [defaultDestination, setDefaultDestination] = React.useState(address);
     const [hasDefaultDestination, setHasDefaultDestination] = React.useState(false);
 
     return(

@@ -15,10 +15,6 @@ export default function HomeScreen ({navigation}) {
 
     const handleTripButton = async () => {
         navigation.navigate('Make a Trip')
-        // const destination = await createDestination(user.jwt, user.uid, "Calle", 77.777, -77.77);
-        // console.log(destination);
-        // setHasDefaultDestination(true);
-        // setDefaultDestination(destination);
     }
 
     return (

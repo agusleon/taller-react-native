@@ -6,6 +6,7 @@ import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
 import { createUser } from '../services/users';
+import { getDefaultDestination } from '../services/trips';
 
 
 export default function RegisterScreen({navigation}) {
@@ -14,23 +15,51 @@ export default function RegisterScreen({navigation}) {
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
     const [wallet, setWallet] = useState('')
+    const [loading, setLoading] = useState(false);
     const [confirmedPassword, setConfirmedPassword] = useState('')
 
-    const {role, setUser} = useContext(FiuberContext);
+    const {role, setUser, setHasDefaultDestination, setDefaultDestination, setLoggedIn} = useContext(FiuberContext);
 
-    const registerUser = async () => {
+    const handleRegister = async () => {
+        setLoading(true);
         try {
             await registerUserWithEmailAndPassword(username, email, password, role);
+            const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
-            const uid = auth.currentUser.uid;
-
-            console.log("Usuario creado en firebase con rol ", role, " y mail ", email);
-            const response = await createUser(username, wallet, role, uid, idTokenResult.token);
-            console.log("Usuario creado en base de datos con info ", response);
             
+            console.log("Usuario creado en firebase con rol ", role, " y mail ", email);
+            const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
+            console.log("Usuario creado en base de datos con info ", user_response);
+            if (role == 'passenger'){
+                const destination = await getDefaultDestination(idTokenResult.token);
+                console.log(destination);
+                if (destination == ''){
+                    setHasDefaultDestination(false);
+                    console.log("Usuario no tiene default destination");
+                } else {
+                    setHasDefaultDestination(true);
+                    const default_destination = {
+                        description:destination.address,
+                        longitude:destination.longitude,
+                        latitude:destination.latitude
+                    }
+                    setDefaultDestination(default_destination);
+                }
+            }
+            const user = {
+                uid: user_response.uid,
+                name: user_response.name,
+                email: user_response.email,
+                wallet: user_response.wallet,
+                password: password,
+                jwt: idTokenResult.token,
+            }
+            setUser(user)
+            setHasDefaultDestination(false);
+            setLoggedIn(true);
         } catch (error) {
             console.log(error);
-            
+            alert(error.message);
         }
         
     }
@@ -84,7 +113,8 @@ export default function RegisterScreen({navigation}) {
                         ) :  
                         <Text></Text>
                     }
-                    <Button mode="outlined" disabled={(password != confirmedPassword)} onPress={registerUser}>
+                    {loading ? <Text style={styles.text}>Loading...</Text> : <Text></Text>}
+                    <Button mode="outlined" disabled={(password != confirmedPassword)} onPress={handleRegister}>
                         Register
                     </Button>
                 </View>

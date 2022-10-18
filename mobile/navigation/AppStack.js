@@ -8,6 +8,7 @@ import CustomDrawer from '../components/CustomDrawer';
 import { FiuberContext } from '../context/FiuberContext';
 import TripInfoScreen from '../screens/TripInfoScreen';
 import WalletScreen from '../screens/WalletScreen';
+import FavoriteDestinationsScreen from '../screens/FavoriteDestinationsScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -32,6 +33,11 @@ const AppStack = () => {
             <Drawer.Screen component={ProfileScreen} name="Profile" options={{
                 drawerIcon: ({color}) => (
                     <Ionicons name="person-outline" size={22} color={color}/>
+                    )
+                }}/>
+            <Drawer.Screen component={FavoriteDestinationsScreen} name="My Destinations" options={{
+                drawerIcon: ({color}) => (
+                    <Ionicons name="heart-outline" size={22} color={color}/>
                     )
                 }}/>
             <Drawer.Screen component={TripInfoScreen} name="Make a Trip" options={{
@@ -63,7 +69,7 @@ const AppStack = () => {
                     }}/>
                 <Drawer.Screen component={WalletScreen} name="Wallet" options={{
                     drawerIcon: ({color}) => (
-                        <Ionicons name="bitcoin" size={22} color={color}/>
+                        <Ionicons name="logo-bitcoin" size={22} color={color}/>
                         )
                     }}/>
                 </Drawer.Navigator>

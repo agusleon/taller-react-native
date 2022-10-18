@@ -28,11 +28,13 @@ const createDefaultDestination = async (jwt, address, longitude, latitude) => {
     }
   };
 
-  const createCustomDestination = async (jwt, address, name) => {
+  const createCustomDestination = async (jwt, address, name, latitude, longitude) => {
 
     const body = JSON.stringify({
         address,
         custom_name:name,
+        latitude,
+        longitude
     });
     console.log(body);
     const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations/name';
@@ -83,4 +85,31 @@ const getDefaultDestination = async (jwt) => {
 
 };
 
-export {createDefaultDestination, getDefaultDestination, createCustomDestination}
+const getFavoriteDestinations = async (jwt) => {
+
+    const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/destinations/name/';
+    const bearer = 'Bearer '+jwt;
+    console.log
+    try {
+        const response = await fetch(url,
+        {
+            method:'GET',
+            headers: {
+                'Authorization': bearer,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+        });
+        const json = await response.json();
+        if (json.detail){
+            return '';
+        }
+        return json;
+    } catch (err) {
+      console.error(err);
+      alert("error",err.message);
+    }
+
+};
+
+export {createDefaultDestination, getDefaultDestination, createCustomDestination, getFavoriteDestinations}

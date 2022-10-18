@@ -2,6 +2,34 @@ import React from 'react';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const GooglePlacesInput = ({placeholder, onPlaceSelected}) => {
+
+  // const [destinations, setDestinations] = useState([
+  //   {
+  //     description:'',
+  //     geometry: {
+  //       location: {
+  //         lat: 0,
+  //         lng: 0
+  //       }
+  //     }
+  //   }
+  // ]);
+  // const {user} = useContext(FiuberContext);
+
+  // useEffect(() => {
+  //   async function fetchDestination(){
+  //     const fetched_destinations = await getFavoriteDestinations(user.jwt);
+  //     if (!fetched_destinations.detail){
+  //       console.log("Destinations customs:",fetched_destinations);
+  //       setDestinations(fetched_destinations);
+  //       return;
+  //     }
+  //   }
+    
+  //   fetchDestination();
+  // })
+
+
   return (
     <GooglePlacesAutocomplete
       placeholder={placeholder}
@@ -23,6 +51,7 @@ const GooglePlacesInput = ({placeholder, onPlaceSelected}) => {
         key: 'AIzaSyCkRY5LLU7MR3J1XGHzJG9CXrvEypQpdJM',
         language: 'en',
       }}
+      // predefinedPlaces={destinations}
       />
   );
 };

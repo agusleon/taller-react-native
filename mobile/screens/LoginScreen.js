@@ -15,12 +15,15 @@ export default function LoginScreen({navigation}) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false);
-    const {setLoggedIn, setRole, setHasDefaultDestination, setUser, role} = useContext(FiuberContext);
+    const {setLoggedIn, setRole, setHasDefaultDestination, setDefaultDestination, setUser, role} = useContext(FiuberContext);
 
-    const fetchUser = async (uid) => {
+    const handleLogin = async () => {
+        setLoading(true);
         try {
+            await logInWithEmailAndPassword(email, password);
+            const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
-            const user_response = await getUser(uid, idTokenResult.token);
+            const user_response = await getUser(user_uid, idTokenResult.token);
             const destination = await getDefaultDestination(idTokenResult.token);
             console.log(destination);
             if (destination == ''){
@@ -28,6 +31,12 @@ export default function LoginScreen({navigation}) {
                 console.log("Usuario no tiene default destination");
             } else {
                 setHasDefaultDestination(true);
+                const default_destination = {
+                    description:destination.address,
+                    longitude:destination.longitude,
+                    latitude:destination.latitude
+                }
+                setDefaultDestination(default_destination);
             }
             const user = {
                 uid: user_response.uid,
@@ -38,27 +47,14 @@ export default function LoginScreen({navigation}) {
                 jwt: idTokenResult.token,
             }
             setUser(user)
+            console.log("Usuario se loggeo correctamente: ",user, " con rol ", role);
             setRole(user_response.roles[0])
             setLoggedIn(true)
-            console.log("Usuario se loggeo correctamente: ",user, " con rol ", role);
-            
         } catch (err) {
             console.log("Error buscando el usuario");
             alert(err.message);
         }
-
     };
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-          if (user) {
-            setLoading(true);
-            fetchUser(user.uid);
-          }
-        })
-    
-        return unsubscribe
-      }, [])
 
     return (
         <SafeAreaView style={styles.container}>
@@ -85,7 +81,7 @@ export default function LoginScreen({navigation}) {
                     </View>
                 </View>
                 {loading ? <Text style={styles.text}>Loading...</Text> : <Text></Text>}
-                <Button mode="contained" onPress={() => logInWithEmailAndPassword(email, password)}>
+                <Button mode="contained" onPress={handleLogin}>
                     Login
                 </Button>
                 <Text style={{alignSelf:'center'}}>or</Text>

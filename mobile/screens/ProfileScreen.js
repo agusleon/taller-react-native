@@ -21,15 +21,20 @@ const ProfileScreen = ({navigation}) => {
     const {user, role} = useContext(FiuberContext);
     const [destination, setDestination] = useState('');
 
-    useEffect(() => {
-      async function fetchDestination(){
-        const response = await getDefaultDestination(user.jwt);
-        if (!response.detail){
-          setDestination(response.address)
-        }
+    const fetchDestination = async() => {
+      const response = await getDefaultDestination(user.jwt);
+      if (!response.detail){
+        setDestination(response.address)
       }
-      
-      fetchDestination();
+    }
+
+    useEffect(() => {
+      if (role=='passenger'){
+
+        fetchDestination();
+      } else {
+        return;
+      }
     }, [])
 
     return (
@@ -59,10 +64,17 @@ const ProfileScreen = ({navigation}) => {
             <Ionicons name="person-outline" color="#777777" size={20}/>
             <Text style={{color:"#777777", marginLeft: 20}}>{role}</Text>
           </View>
+          {(role=='passenger') ? 
           <View style={styles.row}>
             <Ionicons name="heart-outline" color="#777777" size={20}/>
             <Text style={{color:"#777777", marginLeft: 20}}>{destination}</Text>
           </View>
+          :
+          <View style={styles.row}>
+            <Ionicons name="car-outline" color="#777777" size={20}/>
+            <Text style={{color:"#777777", marginLeft: 20}}></Text>
+          </View>
+        }
         </View>
   
         <View style={styles.infoBoxWrapper}>
@@ -80,7 +92,7 @@ const ProfileScreen = ({navigation}) => {
         </View>
   
         <View style={styles.menuWrapper}>
-          <TouchableRipple onPress={() => {}}>
+          <TouchableRipple onPress={()=>{navigation.navigate('My Destinations')}}>
             <View style={styles.menuItem}>
               <Ionicons name="heart-outline" color="#FF6347" size={25}/>
               <Text style={styles.menuItemText}>My Destinations</Text>

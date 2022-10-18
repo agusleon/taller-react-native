@@ -6,24 +6,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import GooglePlacesInput from '../components/GooglePlacesInput';
 import { createCustomDestination } from '../services/trips';
 import { FiuberContext } from '../context/FiuberContext';
-// import { FiuberContext } from '../context/FiuberContext';
 
 const TripInfoScreen = ({navigation}) => {
 
-    const address = {
-        name: '',
-        description: '',
-        latitude: '',
-        longitude: ''
-    }
     const [name,setName] = useState('');
-    const [destination, setDestination] = useState(address);
-    const {user} = useContext(FiuberContext);
-
-    // useEffect(() => {
-    //     // make get call to retrieve already saved destinations
-    //     // we are going to use it to display them in the google autocomplete
-    //   }, [])
+    const {user, setCurrentDestination, currentDestination} = useContext(FiuberContext);
 
     const onPlaceSelected = (details) => {
         const address = {
@@ -31,13 +18,13 @@ const TripInfoScreen = ({navigation}) => {
             latitude: details.geometry.location.lat,
             longitude: details.geometry.location.lng
         }
-        setDestination(address)
-        console.log("Se seteo un viaje a ",destination)
+        setCurrentDestination(address);
+        console.log("Se seteo un viaje a ",currentDestination)
     }
 
     const saveAddress = async () => {
         try {
-            const response = await createCustomDestination(user.jwt, destination.description, name);
+            const response = await createCustomDestination(user.jwt, currentDestination.description, name, currentDestination.latitude, currentDestination.longitude);
             if (response.detail){
                 console.log(response);
                 console.log("No se pudo agregar la custom destination");
@@ -48,6 +35,10 @@ const TripInfoScreen = ({navigation}) => {
         } catch(err){
             console.log("No se pudo agregar la custom destination");
         }
+    }
+
+    const handleStartTrip = () => {
+        navigation.navigate('Home');
     }
 
     return (
@@ -73,7 +64,7 @@ const TripInfoScreen = ({navigation}) => {
                 </View>
             </View>
             <View style={styles.button_container}>
-                <Button style={styles.trip_button} mode="contained" onPress={() => {navigation.navigate('Home')}}>
+                <Button style={styles.trip_button} mode="contained" onPress={handleStartTrip}>
                     START TRIP
                 </Button>
                 <Button style={styles.trip_button} mode="outlined" onPress={() => {navigation.navigate('Home')}}>
