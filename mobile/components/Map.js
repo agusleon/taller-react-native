@@ -11,7 +11,7 @@ import { FiuberContext } from '../context/FiuberContext';
 
 const Map = () => {
 
-    const {currentDestination,defaultDestination} = useContext(FiuberContext);
+    const {currentDestination} = useContext(FiuberContext);
     const mapRef = useRef(MapView);
 
     const moveTo = async (currentDestination) => {
@@ -30,7 +30,7 @@ const Map = () => {
     useEffect(() => {
         moveTo(currentDestination);
         
-    });
+    }, []);
 
     return (
         <MapView 
@@ -38,11 +38,7 @@ const Map = () => {
             style={styles.map}
             showsUserLocation={true}
         >
-            {defaultDestination ?
-                <Marker coordinate={{latitude: defaultDestination.latitude, longitude: defaultDestination.longitude}} />
-                :
-                <Marker coordinate={{latitude: currentDestination.latitude, longitude: currentDestination.longitude}} />
-            }
+            <Marker coordinate={{latitude: currentDestination.latitude, longitude: currentDestination.longitude}} />
         </MapView>
     )
 };

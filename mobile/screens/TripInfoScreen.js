@@ -10,7 +10,7 @@ import { FiuberContext } from '../context/FiuberContext';
 const TripInfoScreen = ({navigation}) => {
 
     const [name,setName] = useState('');
-    const {user, setCurrentDestination, currentDestination} = useContext(FiuberContext);
+    const {user, setCurrentDestination, currentDestination, destinations, setDestinations} = useContext(FiuberContext);
 
     const onPlaceSelected = (details) => {
         const address = {
@@ -30,6 +30,8 @@ const TripInfoScreen = ({navigation}) => {
                 console.log("No se pudo agregar la custom destination");
                 alert("No se pudo agregar la destination");
             } else {
+                const new_destinations = destinations.concat(response);
+                setDestinations(new_destinations);
                 console.log("Custom destination creada correctamente: ",response);
             }
         } catch(err){

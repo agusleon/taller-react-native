@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import {View, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Avatar,
@@ -12,30 +12,29 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
-import { getDefaultDestination } from '../services/trips';
+// import { getDefaultDestination } from '../services/trips';
 
 
 const ProfileScreen = ({navigation}) => {
 
     
-    const {user, role} = useContext(FiuberContext);
-    const [destination, setDestination] = useState('');
+    const {user, role, defaultDestination} = useContext(FiuberContext);
 
-    const fetchDestination = async() => {
-      const response = await getDefaultDestination(user.jwt);
-      if (!response.detail){
-        setDestination(response.address)
-      }
-    }
+    // const fetchDestination = async() => {
+    //   const response = await getDefaultDestination(user.jwt);
+    //   if (!response.detail){
+    //     setDestination(response.address)
+    //   }
+    // }
 
-    useEffect(() => {
-      if (role=='passenger'){
+    // useEffect(() => {
+    //   if (role=='passenger'){
 
-        fetchDestination();
-      } else {
-        return;
-      }
-    }, [])
+    //     fetchDestination();
+    //   } else {
+    //     return;
+    //   }
+    // }, [])
 
     return (
       <SafeAreaView style={styles.container}>
@@ -67,7 +66,7 @@ const ProfileScreen = ({navigation}) => {
           {(role=='passenger') ? 
           <View style={styles.row}>
             <Ionicons name="heart-outline" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{destination}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{defaultDestination.description}</Text>
           </View>
           :
           <View style={styles.row}>
