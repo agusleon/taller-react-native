@@ -1,27 +1,60 @@
-import  React, {useState} from 'react';
+/* eslint-disable no-unused-vars */
+import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
 import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
+import { auth, db, logInWithEmailAndPassword } from '../firebase';
+import { query, collection, getDocs, where } from "firebase/firestore";
+import { FiuberContext } from '../context/FiuberContext';
+import { getUser } from '../services/users';
+import { getDefaultDestination } from '../services/trips'
 
-import app from '../firebase'
 
 
 export default function LoginScreen({navigation}) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false);
+    const {setLoggedIn, setRole, setHasDefaultDestination, setDefaultDestination, setUser, role} = useContext(FiuberContext);
 
-
-    const handleSignIn = () => {
-                
-        app.auth()
-            .signInWithEmailAndPassword(email, password)
-            .then(() => {
-                console.log('Signed In!')
-                console.log(email, password)
-            })
-            .catch(error => console.log(error))
-            navigation.navigate('App')
-    }
+    const handleLogin = async () => {
+        setLoading(true);
+        try {
+            await logInWithEmailAndPassword(email, password);
+            const user_uid = auth.currentUser.uid;
+            const idTokenResult = await auth.currentUser.getIdTokenResult();
+            const user_response = await getUser(user_uid, idTokenResult.token);
+            const destination = await getDefaultDestination(idTokenResult.token);
+            console.log(destination);
+            if (destination == ''){
+                setHasDefaultDestination(false);
+                console.log("Usuario no tiene default destination");
+            } else {
+                setHasDefaultDestination(true);
+                const default_destination = {
+                    description:destination.address,
+                    longitude:destination.longitude,
+                    latitude:destination.latitude
+                }
+                setDefaultDestination(default_destination);
+            }
+            const user = {
+                uid: user_response.uid,
+                name: user_response.name,
+                email: user_response.email,
+                wallet: user_response.wallet,
+                password: password,
+                jwt: idTokenResult.token,
+            }
+            setUser(user)
+            console.log("Usuario se loggeo correctamente: ",user, " con rol ", role);
+            setRole(user_response.roles[0])
+            setLoggedIn(true)
+        } catch (err) {
+            console.log("Error buscando el usuario");
+            alert(err.message);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -47,11 +80,12 @@ export default function LoginScreen({navigation}) {
                         </TouchableRipple>
                     </View>
                 </View>
-                <Button mode="contained" onPress={handleSignIn}>
+                {loading ? <Text style={styles.text}>Loading...</Text> : <Text></Text>}
+                <Button mode="contained" onPress={handleLogin}>
                     Login
                 </Button>
                 <Text style={{alignSelf:'center'}}>or</Text>
-                <Button mode="outlined" onPress={() => navigation.navigate('Register')}>
+                <Button mode="outlined" onPress={() => navigation.navigate('Onboarding')}>
                     Register here
                 </Button>
             </View>

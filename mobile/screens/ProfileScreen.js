@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {View, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Avatar,
@@ -11,11 +11,31 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import TopBar from '../components/TopBar'
-import app from '../firebase'
+import { FiuberContext } from '../context/FiuberContext';
+import { getDefaultDestination } from '../services/trips';
 
 
 const ProfileScreen = ({navigation}) => {
 
+    
+    const {user, role} = useContext(FiuberContext);
+    const [destination, setDestination] = useState('');
+
+    const fetchDestination = async() => {
+      const response = await getDefaultDestination(user.jwt);
+      if (!response.detail){
+        setDestination(response.address)
+      }
+    }
+
+    useEffect(() => {
+      if (role=='passenger'){
+
+        fetchDestination();
+      } else {
+        return;
+      }
+    }, [])
 
     return (
       <SafeAreaView style={styles.container}>
@@ -30,7 +50,7 @@ const ProfileScreen = ({navigation}) => {
               <Title style={[styles.title, {
                 marginTop:15,
                 marginBottom: 5,
-              }]}>Agustina</Title>
+              }]}>{user.name}</Title>
             </View>
           </View>
         </View>
@@ -38,16 +58,23 @@ const ProfileScreen = ({navigation}) => {
         <View style={styles.userInfoSection}>
           <View style={styles.row}>
             <Ionicons name="mail" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{app.auth().currentUser.email}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{user.email}</Text>
           </View>
           <View style={styles.row}>
-            <Ionicons name="add" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>other property</Text>
+            <Ionicons name="person-outline" color="#777777" size={20}/>
+            <Text style={{color:"#777777", marginLeft: 20}}>{role}</Text>
           </View>
+          {(role=='passenger') ? 
           <View style={styles.row}>
-            <Ionicons name="add" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>other property</Text>
+            <Ionicons name="heart-outline" color="#777777" size={20}/>
+            <Text style={{color:"#777777", marginLeft: 20}}>{destination}</Text>
           </View>
+          :
+          <View style={styles.row}>
+            <Ionicons name="car-outline" color="#777777" size={20}/>
+            <Text style={{color:"#777777", marginLeft: 20}}></Text>
+          </View>
+        }
         </View>
   
         <View style={styles.infoBoxWrapper}>
@@ -65,16 +92,16 @@ const ProfileScreen = ({navigation}) => {
         </View>
   
         <View style={styles.menuWrapper}>
-          <TouchableRipple onPress={() => {}}>
+          <TouchableRipple onPress={()=>{navigation.navigate('My Destinations')}}>
             <View style={styles.menuItem}>
               <Ionicons name="heart-outline" color="#FF6347" size={25}/>
-              <Text style={styles.menuItemText}>Favorite Destinations</Text>
+              <Text style={styles.menuItemText}>My Destinations</Text>
             </View>
           </TouchableRipple>
-          <TouchableRipple onPress={() => {}}>
+          <TouchableRipple onPress={() => {navigation.navigate('Wallet')}}>
             <View style={styles.menuItem}>
-              <Ionicons name="card" color="#FF6347" size={25}/>
-              <Text style={styles.menuItemText}>Payment</Text>
+              <Ionicons name="logo-bitcoin" color="#FF6347" size={25}/>
+              <Text style={styles.menuItemText}>Wallet</Text>
             </View>
           </TouchableRipple>
           <TouchableRipple onPress={() => {}}>

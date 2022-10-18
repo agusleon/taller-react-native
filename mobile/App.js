@@ -1,13 +1,12 @@
 import { React } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import AuthStack from './navigation/AuthStack';
-
+import {ContextProvider} from './context/FiuberContext';
+import Router from './navigation/Router';
 
 const App = () => {
   return (
-      <NavigationContainer>
-        <AuthStack/>
-      </NavigationContainer>
+      <ContextProvider>
+        <Router/>
+      </ContextProvider>
     )
 }
 
