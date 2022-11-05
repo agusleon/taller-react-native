@@ -10,30 +10,41 @@ const DefaultDestination = () => {
     const address_default = {
         description: '',
         latitude: 0,
-        longitude: 0
+        longitude: 0,
+        latitudeDelta: 0.09,
+        longitudDelta: 0.04
+
     }
 
     const [address, setAddres] = useState(address_default);
-    const {setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
+    const {currentDestination, setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
 
     const handleSave = async () => {
         try {
             const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
+            
+           // ojo aca puede no estar creandola bien y no falla, porque tira un object con descripcion
             console.log("Se creo la default destination correctamente: ",destination);
-            setHasDefaultDestination(true);
-            setCurrentDestination(destination);
             setDefaultDestination(destination);
+            
+            setHasDefaultDestination(true);
+            //setCurrentDestination(destination);
+           
         } catch (err) {
             console.log("No se pudo crear la default destination del usuario");
         }
     }
 
     const onPlaceSelected = (details) => {
+        console.log("estos son los details destination" ,details)
         const address = {
             description: details.formatted_address,
             latitude: details.geometry.location.lat,
             longitude: details.geometry.location.lng
         }
+        console.log("details desc", address.description)
+        console.log("details lat", address.latitude)
+        console.log("details longi", address.longitude)
         setAddres(address)
     }
 

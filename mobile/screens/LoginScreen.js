@@ -7,8 +7,9 @@ import { query, collection, getDocs, where } from "firebase/firestore";
 import { FiuberContext } from '../context/FiuberContext';
 import { getUser } from '../services/users';
 import { getDefaultDestination } from '../services/trips'
+import { format } from 'react-string-format';
 
-
+import * as Location from 'expo-location';
 
 export default function LoginScreen({navigation}) {
 
@@ -24,21 +25,53 @@ export default function LoginScreen({navigation}) {
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
             const user_response = await getUser(user_uid, idTokenResult.token);
-            const destination = await getDefaultDestination(idTokenResult.token);
-            console.log(destination);
-            if (destination == ''){
+
+
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                console.log('Permission to access location was denied');
+                return;
+            }
+        
+            let location = await Location.getCurrentPositionAsync({});
+
+
+            //const destination = await getDefaultDestination(idTokenResult.token);
+            //console.log(destination);
+            if (location == ''){
                 setHasDefaultDestination(false);
                 console.log("Usuario no tiene default destination");
             } else {
+                let { longitude, latitude } = location.coords;
+
+                let regionName = await Location.reverseGeocodeAsync({
+                    longitude,
+                    latitude,
+                });
+                const street = (regionName[0].street)
+                const streetNumber = regionName[0].streetNumber
+                const city = regionName[0].city
                 setHasDefaultDestination(true);
+                
+                const description = `${street} ${streetNumber}, ${city}`
                 const default_destination = {
-                    description:destination.address,
-                    longitude:destination.longitude,
-                    latitude:destination.latitude
+                    
+                    description: description,
+                    longitude:location.coords.longitude,
+                    latitude:location.coords.latitude
                 }
+                //asumimos que apunta a lo mismo para simplificar 
                 setCurrentDestination(default_destination);
                 setDefaultDestination(default_destination);
+                setHasDefaultDestination(true);
+              
+                
             }
+
+            //const destination = await getDefaultDestination(idTokenResult.token);
+            
+            
+
             const user = {
                 uid: user_response.uid,
                 name: user_response.name,

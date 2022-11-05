@@ -8,7 +8,7 @@ import { auth } from '../firebase';
 import { createUser } from '../services/users';
 import { getDefaultDestination } from '../services/trips';
 
-
+import * as Location from 'expo-location';
 export default function RegisterScreen({navigation}) {
 
     const [email, setEmail] = useState('')
@@ -18,8 +18,10 @@ export default function RegisterScreen({navigation}) {
     const [loading, setLoading] = useState(false);
     const [confirmedPassword, setConfirmedPassword] = useState('')
 
-    const {role, setUser, setHasDefaultDestination, setCurrentDestination, setLoggedIn} = useContext(FiuberContext);
 
+
+    const {role, setUser, setHasDefaultDestination, setDefaultDestination,setCurrentDestination, setLoggedIn} = useContext(FiuberContext);
+    
     const handleRegister = async () => {
         setLoading(true);
         try {
@@ -31,19 +33,45 @@ export default function RegisterScreen({navigation}) {
             const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
             console.log("Usuario creado en base de datos con info ", user_response);
             if (role == 'passenger'){
-                const destination = await getDefaultDestination(idTokenResult.token);
-                console.log(destination);
-                if (destination == ''){
+
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    console.log('Permission to access location was denied');
+                    //setHasDefaultDestination(false);
+                    return;
+                }
+            
+                let location = await Location.getCurrentPositionAsync({});
+               
+
+                //const destination = await getDefaultDestination(idTokenResult.token);
+                //console.log(destination);
+                if (location == ''){
                     setHasDefaultDestination(false);
                     console.log("Usuario no tiene default destination");
                 } else {
+                    console.log("entra aca")
+                    let { longitude, latitude } = location.coords;
+
+                    let regionName = await Location.reverseGeocodeAsync({
+                        longitude,
+                        latitude,
+                    });
+                    const street = (regionName[0].street)
+                    console.log(regionName[0])
+                    const streetNumber = regionName[0].streetNumber
+                    const city = regionName[0].city
+                    const description = `${street} ${streetNumber}, ${city}`
                     setHasDefaultDestination(true);
                     const default_destination = {
-                        description:destination.address,
-                        longitude:destination.longitude,
-                        latitude:destination.latitude
+                        description: description,
+                        longitude:location.coords.longitude,
+                        latitude:location.coords.latitude
                     }
                     setCurrentDestination(default_destination);
+                    setDefaultDestination(default_destination);
+                    setHasDefaultDestination(true);
+                    
                 }
             }
             const user = {
@@ -60,6 +88,7 @@ export default function RegisterScreen({navigation}) {
         } catch (error) {
             console.log(error);
             alert(error.message);
+            return;
         }
         
     }

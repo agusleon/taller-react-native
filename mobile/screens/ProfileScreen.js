@@ -18,7 +18,7 @@ import { FiuberContext } from '../context/FiuberContext';
 const ProfileScreen = ({navigation}) => {
 
     
-    const {user, role, defaultDestination} = useContext(FiuberContext);
+    const {user, role, currentDestination} = useContext(FiuberContext);
 
     // const fetchDestination = async() => {
     //   const response = await getDefaultDestination(user.jwt);
@@ -66,7 +66,7 @@ const ProfileScreen = ({navigation}) => {
           {(role=='passenger') ? 
           <View style={styles.row}>
             <Ionicons name="heart-outline" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{defaultDestination.description}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{currentDestination.description}</Text>
           </View>
           :
           <View style={styles.row}>

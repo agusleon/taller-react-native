@@ -20,13 +20,17 @@ const ContextProvider = ({children}) => {
           custom_name:'',
           latitude: 0,
           longitude: 0
+      
         }
       ]);
 
     const address = {
-        description:'',
+        description:'una direccion cualquiera',
         longitude:0,
-        latitude:0
+        latitude:0,
+        latitudeDelta: 0.09,
+        longitudDelta: 0.04
+    
     }
 
     const [loggedIn, setLoggedIn] = React.useState(false);
