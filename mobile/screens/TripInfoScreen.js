@@ -11,7 +11,7 @@ const TripInfoScreen = ({navigation}) => {
 
     const [name,setName] = useState('');
     const {user, setCurrentDestination, currentDestination, destinations, setDestinations} = useContext(FiuberContext);
-
+   
     const onPlaceSelected = (details) => {
         const address = {
             description: details.formatted_address,
@@ -26,13 +26,15 @@ const TripInfoScreen = ({navigation}) => {
         try {
             const response = await createCustomDestination(user.jwt, currentDestination.description, name, currentDestination.latitude, currentDestination.longitude);
             if (response.detail){
-                console.log(response);
+                console.log("response detail ",response.detail);
+                console.log("user jwt ",user.jwt);
                 console.log("No se pudo agregar la custom destination");
                 alert("No se pudo agregar la destination");
             } else {
                 const new_destinations = destinations.concat(response);
                 setDestinations(new_destinations);
                 console.log("Custom destination creada correctamente: ",response);
+                alert("Done!");
             }
         } catch(err){
             console.log("No se pudo agregar la custom destination");

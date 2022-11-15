@@ -50,7 +50,7 @@ export default function RegisterScreen({navigation}) {
                     setHasDefaultDestination(false);
                     console.log("Usuario no tiene default destination");
                 } else {
-                    console.log("entra aca")
+                
                     let { longitude, latitude } = location.coords;
 
                     let regionName = await Location.reverseGeocodeAsync({

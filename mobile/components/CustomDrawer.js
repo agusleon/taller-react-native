@@ -8,7 +8,7 @@ import { auth, logout } from '../firebase';
 
 const CustomDrawer = (props) => {
     
-    const {loggedIn, setLoggedIn, role, setRole} = useContext(FiuberContext);
+    const {loggedIn, setLoggedIn, role, setRole, user} = useContext(FiuberContext);
 
     const handleLogout = () => {
         logout(auth);
@@ -18,7 +18,7 @@ const CustomDrawer = (props) => {
     return (
         <View style={{flex:1}}>
             <View style={styles.container}>
-                <Text>Agustina</Text>
+                <Text>{user.name}</Text>
             </View>
             <DrawerContentScrollView {...props} >
                 <DrawerItemList {...props}/>

@@ -5,7 +5,7 @@ import GooglePlacesInput from './GooglePlacesInput'
 import { FiuberContext } from '../context/FiuberContext'
 import { createDefaultDestination } from '../services/trips'
 
-const DefaultDestination = () => {
+const DefaultDestination = ({navigation}) => {
 
     const address_default = {
         description: '',
@@ -17,18 +17,31 @@ const DefaultDestination = () => {
     }
 
     const [address, setAddres] = useState(address_default);
-    const {currentDestination, setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
+    const {defaultDestination,currentDestination, setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
 
     const handleSave = async () => {
         try {
             const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
-            
+            console.log("en default destination user.jwt ", user.jwt)
+            console.log("en default destination destination ", destination)
            // ojo aca puede no estar creandola bien y no falla, porque tira un object con descripcion
-            console.log("Se creo la default destination correctamente: ",destination);
-            setDefaultDestination(destination);
+            //console.log("Se creo la default destination correctamente: ",destination);
+             const d =  {
+                description: destination.description,
+                longitude: destination.longitude,
+                latitude: destination.latitude,
+                latitudeDelta: 0.09,
+                longitudDelta: 0.04
             
-            setHasDefaultDestination(true);
-            //setCurrentDestination(destination);
+            } 
+          //  setDefaultDestination(d);
+            
+            //setHasDefaultDestination(true);
+            console.log("default desti ", defaultDestination)
+            console.log("curren desti que quiero ", address)
+            setCurrentDestination(d);
+            navigation.navigate('Home')
+           
            
         } catch (err) {
             console.log("No se pudo crear la default destination del usuario");
@@ -42,10 +55,10 @@ const DefaultDestination = () => {
             latitude: details.geometry.location.lat,
             longitude: details.geometry.location.lng
         }
-        console.log("details desc", address.description)
-        console.log("details lat", address.latitude)
-        console.log("details longi", address.longitude)
+
         setAddres(address)
+      
+
     }
 
     return (

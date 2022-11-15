@@ -69,8 +69,6 @@ export default function LoginScreen({navigation}) {
             }
 
             //const destination = await getDefaultDestination(idTokenResult.token);
-            
-            
 
             const user = {
                 uid: user_response.uid,
@@ -85,7 +83,7 @@ export default function LoginScreen({navigation}) {
             setRole(user_response.roles[0])
             setLoggedIn(true)
         } catch (err) {
-            console.log("Error buscando el usuario");
+            console.log("Login: Error buscando el usuario");
             alert(err.message);
         }
     };
