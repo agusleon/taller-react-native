@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
-import { Text, TextInput, Button} from 'react-native-paper';
+import { Text, TextInput, Button, ActivityIndicator} from 'react-native-paper';
 import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
@@ -58,11 +58,9 @@ export default function RegisterScreen({navigation}) {
                         latitude,
                     });
                     const street = (regionName[0].street)
-                    console.log(regionName[0])
                     const streetNumber = regionName[0].streetNumber
                     const city = regionName[0].city
                     const description = `${street} ${streetNumber}, ${city}`
-                    setHasDefaultDestination(true);
                     const default_destination = {
                         description: description,
                         longitude:location.coords.longitude,
@@ -142,7 +140,8 @@ export default function RegisterScreen({navigation}) {
                         ) :  
                         <Text></Text>
                     }
-                    {loading ? <Text style={styles.text}>Loading...</Text> : <Text></Text>}
+                    {loading ? <><Text style={styles.activityIndicator}>Loading...</Text><ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} /></>
+                : <Text></Text>}
                     <Button mode="outlined" disabled={(password != confirmedPassword)} onPress={handleRegister}>
                         Register
                     </Button>
@@ -188,5 +187,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 12,
         color: '#20315f',
+    },
+    activityIndicator: {
+        margin:15,
+        width:'50%',
+        fontWeight: 'bold',
+        fontSize: 12,
+        color: '#20315f',
+        alignSelf:'center',
     },
 })

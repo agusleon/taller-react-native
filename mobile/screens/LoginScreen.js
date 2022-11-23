@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import  React, {useState, useContext, useEffect} from 'react';
 import { StyleSheet, View, SafeAreaView} from 'react-native';
-import { Text, TextInput, TouchableRipple, Button} from 'react-native-paper';
+import { Text, TextInput, TouchableRipple, Button, ActivityIndicator} from 'react-native-paper';
 import { auth, db, logInWithEmailAndPassword, sendPasswordReset } from '../firebase';
 import { query, collection, getDocs, where } from "firebase/firestore";
 import { FiuberContext } from '../context/FiuberContext';
@@ -20,6 +20,7 @@ export default function LoginScreen({navigation}) {
 
     const handleLogin = async () => {
         setLoading(true);
+        <ActivityIndicator visible={loading} textContent={'Loading...'} animating={setLoading(true)} />
         try {
             await logInWithEmailAndPassword(email, password);
             const user_uid = auth.currentUser.uid;
@@ -48,6 +49,7 @@ export default function LoginScreen({navigation}) {
                     longitude,
                     latitude,
                 });
+                console.log("region ", regionName);
                 const street = (regionName[0].street)
                 const streetNumber = regionName[0].streetNumber
                 const city = regionName[0].city
@@ -112,7 +114,9 @@ export default function LoginScreen({navigation}) {
                         </TouchableRipple>
                     </View>
                 </View>
-                {loading ? <Text style={styles.text}>Loading...</Text> : <Text></Text>}
+                {loading ? 
+                <><Text style={styles.activityIndicator}>Loading...</Text><ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} /></>
+                : <Text></Text>}
                 <Button mode="contained" onPress={handleLogin}>
                     Login
                 </Button>
@@ -165,4 +169,14 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#20315f',
     },
+
+    activityIndicator: {
+        margin:15,
+        width:'50%',
+        fontWeight: 'bold',
+        fontSize: 12,
+        color: '#20315f',
+        alignSelf:'center',
+    },
+   
 })

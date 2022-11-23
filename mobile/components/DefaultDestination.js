@@ -5,7 +5,7 @@ import GooglePlacesInput from './GooglePlacesInput'
 import { FiuberContext } from '../context/FiuberContext'
 import { createDefaultDestination } from '../services/trips'
 
-const DefaultDestination = ({navigation}) => {
+const DefaultDestination = () => {
 
     const address_default = {
         description: '',
@@ -17,34 +17,45 @@ const DefaultDestination = ({navigation}) => {
     }
 
     const [address, setAddres] = useState(address_default);
-    const {defaultDestination,currentDestination, setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
+    const {defaultDestination, setCurrentDestination,  setHasDefaultDestination, user} = useContext(FiuberContext);
 
     const handleSave = async () => {
         try {
-            const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
-            console.log("en default destination user.jwt ", user.jwt)
+            const destination = await createDefaultDestination(user.jwt, address.description, address.latitude,address.longitude );
+            
             console.log("en default destination destination ", destination)
-           // ojo aca puede no estar creandola bien y no falla, porque tira un object con descripcion
-            //console.log("Se creo la default destination correctamente: ",destination);
+            
              const d =  {
-                description: destination.description,
-                longitude: destination.longitude,
+                description: destination.address,
                 latitude: destination.latitude,
-                latitudeDelta: 0.09,
-                longitudDelta: 0.04
+                longitude: destination.longitude,
             
             } 
-          //  setDefaultDestination(d);
-            
-            //setHasDefaultDestination(true);
+          
             console.log("default desti ", defaultDestination)
             console.log("curren desti que quiero ", address)
+            console.log("la destination devuelta por la api: ", d)
             setCurrentDestination(d);
-            navigation.navigate('Home')
+            setHasDefaultDestination(true)
+          
            
            
         } catch (err) {
-            console.log("No se pudo crear la default destination del usuario");
+            
+            if(err.includes("has previously registered an address")){
+                setHasDefaultDestination(true) 
+                const d =  {
+                    description: address.description,
+                    latitude: address.latitude,
+                    longitude: address.longitude,
+
+                } 
+                setCurrentDestination(d)
+            }
+            alert("Tenes que ingresar una direccion!")
+            setHasDefaultDestination(false)
+            console.log("No se pudo crear la default destination del usuario, err: ",err);
+            
         }
     }
 

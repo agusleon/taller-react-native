@@ -16,41 +16,18 @@ const Map = () => {
    
     const {currentDestination, defaultDestination} = useContext(FiuberContext);
     console.log("la current desti del map ", currentDestination)
+    console.log("la default desti del map ", defaultDestination)
     const mapRef = useRef(MapView);
+   
     const [region, setRegion] = useState({
         latitude: currentDestination.latitude,
         longitude: currentDestination.longitude,
-        latitudeDelta: 0.03,
-        longitudeDelta: 0.03,
+        latitudeDelta: 0.09,
+        longitudeDelta: 0.04,
     })
 
 
    
-   /*  const moveTo = async (currentDestination) => {
-        console.log("current destination ", currentDestination)
-        const camera = await mapRef.current?.getCamera();
-        
-        console.log("camera",camera)
-        console.log("current destination ", currentDestination)
-        if (camera) {
-            console.log("Moving to ", camera.center);
-           
-            camera.center = {
-                latitude: currentDestination.latitude,
-                longitude: currentDestination.longitude,
-                latitudeDelta: 0.09,
-                longitudeDelta:0.04,
-                
-            
-            }
-            camera.zoomEnabled=true
-            console.log("Moving to ", camera.center);
-            mapRef.current?.animateCamera(camera, {duration: 3000});
-        
-        } 
-  
-        return;
-    } */
 
     useEffect(() => {
 
@@ -70,6 +47,7 @@ const Map = () => {
             style={styles.map}
             showsUserLocation={true}
             onRegionChangeComplete={region => setRegion(region)}
+            
   
         >
             <Marker coordinate={{latitude: currentDestination.latitude, longitude: currentDestination.longitude}} />

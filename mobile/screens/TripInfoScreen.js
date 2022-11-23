@@ -25,9 +25,9 @@ const TripInfoScreen = ({navigation}) => {
     const saveAddress = async () => {
         try {
             const response = await createCustomDestination(user.jwt, currentDestination.description, name, currentDestination.latitude, currentDestination.longitude);
+            
             if (response.detail){
                 console.log("response detail ",response.detail);
-                console.log("user jwt ",user.jwt);
                 console.log("No se pudo agregar la custom destination");
                 alert("No se pudo agregar la destination");
             } else {
