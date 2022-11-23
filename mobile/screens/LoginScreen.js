@@ -20,7 +20,7 @@ export default function LoginScreen({navigation}) {
 
     const handleLogin = async () => {
         setLoading(true);
-        <ActivityIndicator visible={loading} textContent={'Loading...'} animating={setLoading(true)} />
+      
         try {
             await logInWithEmailAndPassword(email, password);
             const user_uid = auth.currentUser.uid;
