@@ -17,21 +17,45 @@ const DefaultDestination = () => {
     }
 
     const [address, setAddres] = useState(address_default);
-    const {currentDestination, setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
+    const {defaultDestination, setCurrentDestination,  setHasDefaultDestination, user} = useContext(FiuberContext);
 
     const handleSave = async () => {
         try {
-            const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
+            const destination = await createDefaultDestination(user.jwt, address.description, address.latitude,address.longitude );
             
-           // ojo aca puede no estar creandola bien y no falla, porque tira un object con descripcion
-            console.log("Se creo la default destination correctamente: ",destination);
-            setDefaultDestination(destination);
+            console.log("en default destination destination ", destination)
             
-            setHasDefaultDestination(true);
-            //setCurrentDestination(destination);
+             const d =  {
+                description: destination.address,
+                latitude: destination.latitude,
+                longitude: destination.longitude,
+            
+            } 
+          
+            console.log("default desti ", defaultDestination)
+            console.log("curren desti que quiero ", address)
+            console.log("la destination devuelta por la api: ", d)
+            setCurrentDestination(d);
+            setHasDefaultDestination(true)
+          
+           
            
         } catch (err) {
-            console.log("No se pudo crear la default destination del usuario");
+            
+            if(err.includes("has previously registered an address")){
+                setHasDefaultDestination(true) 
+                const d =  {
+                    description: address.description,
+                    latitude: address.latitude,
+                    longitude: address.longitude,
+
+                } 
+                setCurrentDestination(d)
+            }
+            alert("Tenes que ingresar una direccion!")
+            setHasDefaultDestination(false)
+            console.log("No se pudo crear la default destination del usuario, err: ",err);
+            
         }
     }
 
@@ -42,10 +66,10 @@ const DefaultDestination = () => {
             latitude: details.geometry.location.lat,
             longitude: details.geometry.location.lng
         }
-        console.log("details desc", address.description)
-        console.log("details lat", address.latitude)
-        console.log("details longi", address.longitude)
+
         setAddres(address)
+      
+
     }
 
     return (
