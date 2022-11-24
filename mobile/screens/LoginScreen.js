@@ -1,89 +1,89 @@
 /* eslint-disable no-unused-vars */
-import  React, {useState, useContext, useEffect} from 'react';
-import { StyleSheet, View, SafeAreaView} from 'react-native';
+import  React, {useState, useContext} from 'react';
+import { StyleSheet, View, SafeAreaView, Dimensions} from 'react-native';
 import { Text, TextInput, TouchableRipple, Button, ActivityIndicator} from 'react-native-paper';
-import { auth, db, logInWithEmailAndPassword, sendPasswordReset } from '../firebase';
-import { query, collection, getDocs, where } from "firebase/firestore";
+import { auth, logInWithEmailAndPassword, sendPasswordReset } from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { getUser } from '../services/users';
-import { getDefaultDestination } from '../services/trips'
-import { format } from 'react-string-format';
 
 import * as Location from 'expo-location';
+
+const {width, height} = Dimensions.get("window");
+
+const ASPECT_RATIO = width / height;
+const LATITUDE_DELTA = 0.02;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default function LoginScreen({navigation}) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false);
-    const {setLoggedIn, setRole, setHasDefaultDestination, setDefaultDestination, setCurrentDestination, setUser, role} = useContext(FiuberContext);
+
+    const {setLoggedIn, setRole, setDestination, setCurrentLocation, setUser, role} = useContext(FiuberContext);
 
     const handleLogin = async () => {
+
         setLoading(true);
       
         try {
+
+            // se loggea el usuario en firebase
             await logInWithEmailAndPassword(email, password);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
+
+            // se busca al usuario
             const user_response = await getUser(user_uid, idTokenResult.token);
 
-
+            // se pide acceso a current location (esto se haria nada mas en register)
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 console.log('Permission to access location was denied');
                 return;
             }
-        
+            
+            // se busca la current location
             let location = await Location.getCurrentPositionAsync({});
 
+            let { longitude, latitude } = location.coords;
 
-            //const destination = await getDefaultDestination(idTokenResult.token);
-            //console.log(destination);
-            if (location == ''){
-                setHasDefaultDestination(false);
-                console.log("Usuario no tiene default destination");
-            } else {
-                let { longitude, latitude } = location.coords;
+            let regionName = await Location.reverseGeocodeAsync({
+                longitude,
+                latitude,
+            });
+            console.log("region ", regionName);
+            const street = (regionName[0].street)
+            const streetNumber = regionName[0].streetNumber
+            const city = regionName[0].city
 
-                let regionName = await Location.reverseGeocodeAsync({
-                    longitude,
-                    latitude,
-                });
-                console.log("region ", regionName);
-                const street = (regionName[0].street)
-                const streetNumber = regionName[0].streetNumber
-                const city = regionName[0].city
-                setHasDefaultDestination(true);
-                
-                const description = `${street} ${streetNumber}, ${city}`
-                const default_destination = {
-                    
-                    description: description,
-                    longitude:location.coords.longitude,
-                    latitude:location.coords.latitude
-                }
-                //asumimos que apunta a lo mismo para simplificar 
-                setCurrentDestination(default_destination);
-                setDefaultDestination(default_destination);
-                setHasDefaultDestination(true);
-              
-                
+            const description = `${street} ${streetNumber}, ${city}`
+
+            const address = {
+                description: description,
+                longitude:location.coords.longitude,
+                latitude:location.coords.latitude,
+                longitudeDelta:  0.09,
+                latitudeDelta:  0.04
             }
 
-            //const destination = await getDefaultDestination(idTokenResult.token);
+            setCurrentLocation(address);
+            setDestination(address);
 
+            // se guarda el usuario actual en el context
             const user = {
                 uid: user_response.uid,
                 name: user_response.name,
                 email: user_response.email,
                 wallet: user_response.wallet,
-                password: password,
                 jwt: idTokenResult.token,
             }
             setUser(user)
+
             console.log("Usuario se loggeo correctamente: ",user, " con rol ", role);
             setRole(user_response.roles[0])
             setLoggedIn(true)
+
         } catch (err) {
             console.log("Login: Error buscando el usuario");
             alert(err.message);
@@ -114,13 +114,14 @@ export default function LoginScreen({navigation}) {
                         </TouchableRipple>
                     </View>
                 </View>
+                {/* pondria una screen solo con el activity indicator y chau */}
                 {loading ? 
-                <><Text style={styles.activityIndicator}>Loading...</Text><ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} /></>
+                <ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} />
                 : <Text></Text>}
                 <Button mode="contained" onPress={handleLogin}>
                     Login
                 </Button>
-                <Text style={{alignSelf:'center'}}>or</Text>
+                {/* <Text style={{alignSelf:'center'}}>or</Text> */}
                 <Button mode="outlined" onPress={() => navigation.navigate('Onboarding')}>
                     Register here
                 </Button>

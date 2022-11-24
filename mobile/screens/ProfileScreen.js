@@ -16,9 +16,6 @@ import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
 import { updateUserInfo, getUser } from '../services/users';
 import { auth } from '../firebase';
-import { NavigationEvents } from 'react-navigation';
-
-// import { getDefaultDestination } from '../services/trips';
 
 
 const ProfileScreen = ({navigation}) => {
@@ -27,12 +24,12 @@ const ProfileScreen = ({navigation}) => {
     const DRIVER = 'DRIVER';
     const SAVE = 'Save';
     const SETTINGS = 'Settings'
-    const {user, role, currentDestination, defaultDestination, setUser} = useContext(FiuberContext);
+
+    const {user, role, setUser} = useContext(FiuberContext);
     const [editable,setEditable] = useState(false);
     const [name, setName] = React.useState(user.name);
     const [setting,setSetting] = useState('Settings');
     const [newRole, setRole] = useState(role);
-    //const [setting, dispatch] = useReducer(reducer, 'Settings')
 
     const onSetting = async () => {
     
@@ -56,6 +53,7 @@ const ProfileScreen = ({navigation}) => {
         console.log("el idTokenResult ", idTokenResult)
         
         try{
+          
           await updateUserInfo(user_uid, idTokenResult.token, name,user.wallet, newRole.toLowerCase())
           const user_response = await getUser(user_uid, idTokenResult.token);
           console.log("User response GET", user_response)
@@ -69,9 +67,11 @@ const ProfileScreen = ({navigation}) => {
             password: user.password,
             jwt: idTokenResult.token,
           }
+
           setUser(updateUser)
           setName(user_response.name)
           setRole(user_response.roles[index])
+
         }catch (err) {
           console.log("Error buscando el usuario");
           alert(err.message);
@@ -80,24 +80,6 @@ const ProfileScreen = ({navigation}) => {
         setSetting(SETTINGS)
       }
     }
-
-  
- 
-    // const fetchDestination = async() => {
-    //   const response = await getDefaultDestination(user.jwt);
-    //   if (!response.detail){
-    //     setDestination(response.address)
-    //   }
-    // }
-
-    // useEffect(() => {
-    //   if (role=='passenger'){
-
-    //     fetchDestination();
-    //   } else {
-    //     return;
-    //   }
-    // }, [])
 
     return (
       <SafeAreaView style={styles.container}>
@@ -116,25 +98,25 @@ const ProfileScreen = ({navigation}) => {
         </View>
   
         <View style={styles.userInfoSection}>
+
           <View style={styles.row}>
             <Ionicons name="mail" color="#777777" size={20}/>
             <TextInput editable={false}   style={{color:"#777777", marginLeft: 20, backgroundColor: 'white'}}>{user.email}</TextInput>
           </View>
+
           <View style={styles.row}>
             <Ionicons name="person-outline" color="#777777" size={20}/>
             <TextInput autoCorrect={true} style={{color:"#777777", marginLeft: 20, backgroundColor: 'white'}} placeholder={'Passenger or Driver'} onChangeText={setRole} value={newRole} editable={editable} ></TextInput>
           </View>
+
           {(role=='passenger') ? 
-          <View style={styles.row}>
-            <Ionicons name="heart-outline" color="#777777" size={20}/>
-            <TextInput editable={false} style={{color:"#777777", marginLeft: 20, backgroundColor: 'white'}}>{defaultDestination.description}</TextInput>
-          </View>
-          :
-          <View style={styles.row}>
-            <Ionicons name="car-outline" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}></Text>
-          </View>
-        }
+            <View style={styles.row}></View>
+            :
+            <View style={styles.row}>
+              <Ionicons name="car-outline" color="#777777" size={20}/>
+              <Text style={{color:"#777777", marginLeft: 20}}></Text>
+            </View>
+          }
         </View>
   
         <View style={styles.infoBoxWrapper}>

@@ -1,17 +1,10 @@
-import React, {useContext } from 'react'
+import React from 'react'
 import { View, StyleSheet, Dimensions } from 'react-native'
 import { Button } from 'react-native-paper'
-import DefaultDestination from '../components/DefaultDestination'
-// import GooglePlacesInput from '../components/GooglePlacesInput'
 import Map from '../components/Map'
 import TopBar from '../components/TopBar'
-import { FiuberContext } from '../context/FiuberContext'
-// import { createDestination } from '../services/trips'
-// import { getDefaultDestination } from '../services/trips'
 
 export default function HomeScreen ({navigation}) {
-
-    const {hasDefaultDestination} = useContext(FiuberContext);
 
     const handleTripButton = async () => {
         navigation.navigate('Make a Trip')
@@ -20,18 +13,10 @@ export default function HomeScreen ({navigation}) {
     return (
         <View style={styles.container}>
             <Map/>
-            {hasDefaultDestination && 
-                <TopBar {...navigation} />
-            }
-            {!hasDefaultDestination && <DefaultDestination/>}
-            {hasDefaultDestination && 
-                <Button style={styles.trip_button} mode="contained" onPress={handleTripButton}>
-                    Make Trip
-                </Button>
-            }
-            {/* <Button style={styles.trip_button} mode="contained" onPress={handleTripButton}>
-                Reload
-            </Button>    */}
+            <TopBar {...navigation} />
+            <Button style={styles.trip_button} mode="contained" onPress={handleTripButton}>
+                Make Trip
+            </Button>
         </View>
     )
 }

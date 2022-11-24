@@ -9,12 +9,11 @@ const ContextProvider = ({children}) => {
         name:'',
         uid:'',
         email:'',
-        password:'',
         wallet:'',
         jwt:'',
     }
 
-    const [destinations, setDestinations] = React.useState([
+    const [favoriteDestinations, setFavoriteDestinations] = React.useState([
         {
           address:'',
           custom_name:'',
@@ -25,30 +24,30 @@ const ContextProvider = ({children}) => {
       ]);
 
     const address = {
-        description:'una direccion cualquiera',
+        description:'',
         longitude:0,
         latitude:0,
-        latitudeDelta: 0.09,
-        longitudDelta: 0.04
+        latitudeDelta: 0,
+        longitudDelta: 0
     
     }
 
     const [loggedIn, setLoggedIn] = React.useState(false);
+    const [onTrip, setOnTrip] = React.useState(false);
     const [role, setRole] = React.useState('');
     const [user, setUser] = React.useState(userAuth);
-    const [currentDestination, setCurrentDestination] = React.useState(address);
-    const [defaultDestination, setDefaultDestination] = React.useState(address);
-    const [hasDefaultDestination, setHasDefaultDestination] = React.useState(false);
+    const [currentLocation, setCurrentLocation] = React.useState(address);
+    const [destination, setDestination] = React.useState(address);
 
     return(
         <FiuberContext.Provider value={{
             role,setRole,
             loggedIn, setLoggedIn,
             user, setUser,
-            currentDestination, setCurrentDestination,
-            defaultDestination, setDefaultDestination,
-            hasDefaultDestination, setHasDefaultDestination,
-            destinations, setDestinations
+            currentLocation, setCurrentLocation,
+            destination, setDestination,
+            favoriteDestinations, setFavoriteDestinations,
+            onTrip, setOnTrip
         }}>
             {children}
         </FiuberContext.Provider>

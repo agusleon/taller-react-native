@@ -1,80 +1,75 @@
 import { StyleSheet,View} from 'react-native'
 import TopBar from '../components/TopBar'
-import React, {useState, useContext} from 'react'
-import { Button, TouchableRipple, Text, TextInput } from 'react-native-paper'
-import Ionicons from '@expo/vector-icons/Ionicons';
+import React, {useContext, useState} from 'react'
+import { Button, Text, ActivityIndicator} from 'react-native-paper'
 import GooglePlacesInput from '../components/GooglePlacesInput';
-import { createCustomDestination } from '../services/trips';
 import { FiuberContext } from '../context/FiuberContext';
 
 const TripInfoScreen = ({navigation}) => {
 
-    const [name,setName] = useState('');
-    const {user, setCurrentDestination, currentDestination, destinations, setDestinations} = useContext(FiuberContext);
-   
+    const {destination, setDestination, setOnTrip} = useContext(FiuberContext);
+    const [estimatedFee, setFee] = useState(0);
+    const [loading, setLoading] = useState(false);
+
     const onPlaceSelected = (details) => {
         const address = {
             description: details.formatted_address,
             latitude: details.geometry.location.lat,
             longitude: details.geometry.location.lng
         }
-        setCurrentDestination(address);
-        console.log("Se seteo un viaje a ",currentDestination)
-    }
-
-    const saveAddress = async () => {
-        try {
-            const response = await createCustomDestination(user.jwt, currentDestination.description, name, currentDestination.latitude, currentDestination.longitude);
-            
-            if (response.detail){
-                console.log("response detail ",response.detail);
-                console.log("No se pudo agregar la custom destination");
-                alert("No se pudo agregar la destination");
-            } else {
-                const new_destinations = destinations.concat(response);
-                setDestinations(new_destinations);
-                console.log("Custom destination creada correctamente: ",response);
-                alert("Done!");
-            }
-        } catch(err){
-            console.log("No se pudo agregar la custom destination");
-        }
+        setDestination(address);
+        console.log("Se seteo un viaje a ",destination)
     }
 
     const handleStartTrip = () => {
+        setOnTrip(true)
         navigation.navigate('Home');
+    }
+
+    const estimateFee = () => {
+        // calcular distancia entre destination y current location
+        // llamar motor de reglas
+        setLoading(false)
     }
 
     return (
         <View style={styles.container}>
+
             <TopBar {...navigation} />
+
             <View style={styles.small_container}>
+
                 <Text style={styles.title}>Where to?</Text>
+
                 <View style={styles.address_container}>
+
                     <GooglePlacesInput placeholder='Destination' onPlaceSelected={(details) => onPlaceSelected(details)}/>
-                    <TextInput
-                            label="Give it a name"
-                            value={name}
-                            autoCapitalize='none'
-                            onChangeText={name => setName(name)}
-                            left={<TextInput.Icon icon="home" />}
-                        />
-                    <TouchableRipple onPress={saveAddress}>
-                        <View style={styles.favorite}>
-                            <Ionicons name="heart-outline" color="#FF6347" size={25}/>
-                            <Text style={styles.menuItemText}>Make it a favorite</Text>
-                        </View>
-                    </TouchableRipple>
+
+                </View>
+
+                <View>
+                    <Button mode="outlined" onPress={estimateFee}>
+
+                        <Text>Calculate estimative fee</Text>
+
+                    </Button>
+                    {loading ? 
+                        <ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} />
+                        : <Text></Text>}
+                    <Text  style={styles.title}>{estimatedFee} ETH</Text>                
                 </View>
             </View>
+
+
             <View style={styles.button_container}>
                 <Button style={styles.trip_button} mode="contained" onPress={handleStartTrip}>
-                    START TRIP
+                    CONFIRM
                 </Button>
                 <Button style={styles.trip_button} mode="outlined" onPress={() => {navigation.navigate('Home')}}>
                     CANCEL
                 </Button>
             </View>
+
         </View>
     )
 }
@@ -134,5 +129,17 @@ const styles = StyleSheet.create({
         justifyContent:'space-evenly',
         alignItems:'center',
         width:'50%'
-    }
+    },
+    menuItemText: {
+        marginLeft: 5
+    },
+
+    activityIndicator: {
+        margin:15,
+        width:'50%',
+        fontWeight: 'bold',
+        fontSize: 12,
+        color: '#20315f',
+        alignSelf:'center',
+    },
 })

@@ -50,6 +50,7 @@ const AppStack = () => {
                     <Ionicons name="logo-bitcoin" size={22} color={color}/>
                     )
                 }}/>
+            
             </Drawer.Navigator>
         )
     } else {
