@@ -6,9 +6,9 @@ import ProfileScreen from '../screens/ProfileScreen';
 import HomeScreen from '../screens/HomeScreen';
 import CustomDrawer from '../components/CustomDrawer';
 import { FiuberContext } from '../context/FiuberContext';
-import TripInfoScreen from '../screens/TripInfoScreen';
 import WalletScreen from '../screens/WalletScreen';
 import FavoriteDestinationsScreen from '../screens/FavoriteDestinationsScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -40,14 +40,14 @@ const AppStack = () => {
                     <Ionicons name="heart-outline" size={22} color={color}/>
                     )
                 }}/>
-            <Drawer.Screen component={TripInfoScreen} name="Make a Trip" options={{
-                drawerIcon: ({color}) => (
-                    <Ionicons name="car" size={22} color={color}/>
-                    )
-                }}/>
             <Drawer.Screen component={WalletScreen} name="Wallet" options={{
                 drawerIcon: ({color}) => (
                     <Ionicons name="logo-bitcoin" size={22} color={color}/>
+                    )
+                }}/>
+            <Drawer.Screen component={EditProfileScreen} name="Edit profile" options={{
+                drawerIcon: ({color}) => (
+                    <Ionicons name="settings-outline" size={22} color={color}/>
                     )
                 }}/>
             
@@ -71,6 +71,11 @@ const AppStack = () => {
                 <Drawer.Screen component={WalletScreen} name="Wallet" options={{
                     drawerIcon: ({color}) => (
                         <Ionicons name="logo-bitcoin" size={22} color={color}/>
+                        )
+                    }}/>
+                <Drawer.Screen component={EditProfileScreen} name="Edit profile" options={{
+                    drawerIcon: ({color}) => (
+                        <Ionicons name="settings-outline" size={22} color={color}/>
                         )
                     }}/>
                 </Drawer.Navigator>
