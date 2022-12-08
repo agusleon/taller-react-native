@@ -1,4 +1,4 @@
-import React, { useContext, useState, useReducer } from 'react';
+import React, { useContext } from 'react';
 import {View, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Avatar,
@@ -6,135 +6,56 @@ import {
   Caption,
   Text,
   TouchableRipple,
-  TextInput,
-  Button,
 } from 'react-native-paper';
-
 import Ionicons from '@expo/vector-icons/Ionicons';
-
 import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
-import { updateUserInfo, getUser } from '../services/users';
-import { auth } from '../firebase';
-import { NavigationEvents } from 'react-navigation';
 
-// import { getDefaultDestination } from '../services/trips';
 
 
 const ProfileScreen = ({navigation}) => {
 
-    const PASSENGER = 'passenger';
-    const DRIVER = 'DRIVER';
-    const SAVE = 'Save';
-    const SETTINGS = 'Settings'
-    const {user, role, currentDestination, defaultDestination, setUser} = useContext(FiuberContext);
-    const [editable,setEditable] = useState(false);
-    const [name, setName] = React.useState(user.name);
-    const [setting,setSetting] = useState('Settings');
-    const [newRole, setRole] = useState(role);
-    //const [setting, dispatch] = useReducer(reducer, 'Settings')
-
-    const onSetting = async () => {
-    
-      if(setting == SETTINGS){
-        console.log("Se vuelve editable")
-        setSetting(SAVE)
-        setEditable(true);
-        console.log("el name ingresado ",name)
-        
-      }
-      if(setting == SAVE){
-   
-        if(newRole.toLowerCase() != PASSENGER && newRole.toLowerCase() != DRIVER) {
-          setRole(role)
-          alert("Ups! El rol ingresado no existe")
-      
-          return;
-        } 
-        const user_uid = auth.currentUser.uid;
-        const idTokenResult = await auth.currentUser.getIdTokenResult();
-        console.log("el idTokenResult ", idTokenResult)
-        
-        try{
-          await updateUserInfo(user_uid, idTokenResult.token, name,user.wallet, newRole.toLowerCase())
-          const user_response = await getUser(user_uid, idTokenResult.token);
-          console.log("User response GET", user_response)
-          
-          const index = user_response.roles.findIndex( r =>  (r == newRole.toLowerCase()));
-          const updateUser = {
-            uid: user_response.uid,
-            name: user_response.name,
-            email: user_response.email,
-            wallet: user_response.wallet,
-            password: user.password,
-            jwt: idTokenResult.token,
-          }
-          setUser(updateUser)
-          setName(user_response.name)
-          setRole(user_response.roles[index])
-        }catch (err) {
-          console.log("Error buscando el usuario");
-          alert(err.message);
-        }
-        setEditable(false)
-        setSetting(SETTINGS)
-      }
-    }
-
-  
- 
-    // const fetchDestination = async() => {
-    //   const response = await getDefaultDestination(user.jwt);
-    //   if (!response.detail){
-    //     setDestination(response.address)
-    //   }
-    // }
-
-    // useEffect(() => {
-    //   if (role=='passenger'){
-
-    //     fetchDestination();
-    //   } else {
-    //     return;
-    //   }
-    // }, [])
+    const {user, role} = useContext(FiuberContext);
 
     return (
       <SafeAreaView style={styles.container}>
         <TopBar {...navigation} />
         <View style={styles.userInfoSection}>
-          <View style={{flexDirection: 'row', marginTop: 15}}>
-            <Avatar.Image 
-              size={60}
+          <View style={{flexDirection: 'row', alignItems:'center', marginTop: 15}}>
+            <Avatar.Image
+              size={100}
+              source={{uri:'https://avatars.dicebear.com/api/big-smile/'+user.uid+'.png'}}
             />
             <View style={{marginLeft: 20}}>
-      
-              <TextInput placeholder={user.name} onChangeText={setName} value={name} editable={editable} style={styles.title} ></TextInput>
-
+              <Title style={[styles.title, {
+                  marginTop:15,
+                  marginBottom: 5,
+                }]}>{user.name}
+              </Title>
             </View>
           </View>
         </View>
   
         <View style={styles.userInfoSection}>
+
           <View style={styles.row}>
             <Ionicons name="mail" color="#777777" size={20}/>
-            <TextInput editable={false}   style={{color:"#777777", marginLeft: 20, backgroundColor: 'white'}}>{user.email}</TextInput>
+            <Text style={{color:"#777777", marginLeft: 20}}>{user.email}</Text>
           </View>
+
           <View style={styles.row}>
             <Ionicons name="person-outline" color="#777777" size={20}/>
-            <TextInput autoCorrect={true} style={{color:"#777777", marginLeft: 20, backgroundColor: 'white'}} placeholder={'Passenger or Driver'} onChangeText={setRole} value={newRole} editable={editable} ></TextInput>
+            <Text style={{color:"#777777", marginLeft: 20}}>{role}</Text>
           </View>
+
           {(role=='passenger') ? 
-          <View style={styles.row}>
-            <Ionicons name="heart-outline" color="#777777" size={20}/>
-            <TextInput editable={false} style={{color:"#777777", marginLeft: 20, backgroundColor: 'white'}}>{defaultDestination.description}</TextInput>
-          </View>
-          :
-          <View style={styles.row}>
-            <Ionicons name="car-outline" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}></Text>
-          </View>
-        }
+            <></>
+            :
+            <View style={styles.row}>
+              <Ionicons name="car-outline" color="#777777" size={20}/>
+              {/* <Text style={{color:"#777777", marginLeft: 20}}>{car.model} {car.patent}</Text> */}
+            </View>
+          }
         </View>
   
         <View style={styles.infoBoxWrapper}>
@@ -164,10 +85,10 @@ const ProfileScreen = ({navigation}) => {
               <Text style={styles.menuItemText}>Wallet</Text>
             </View>
           </TouchableRipple>
-          <TouchableRipple onPress={() => {onSetting}}>
+          <TouchableRipple onPress={() => {navigation.navigate('Edit profile')}}>
             <View style={styles.menuItem}>
               <Ionicons name="settings-outline" color="#FF6347" size={25}/>
-              <Button onPress={onSetting} style={styles.menuItemText}>{setting}</Button>
+              <Text style={styles.menuItemText}>Settings</Text>
             </View>
           </TouchableRipple>
         </View>

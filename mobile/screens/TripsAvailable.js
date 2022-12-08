@@ -1,60 +1,20 @@
-import { StyleSheet, View, FlatList, ScrollView, Dimensions} from 'react-native';
+import { StyleSheet, View, FlatList, ScrollView} from 'react-native';
 import {Button, Text, TouchableRipple, Modal} from 'react-native-paper';
 import { Entypo } from '@expo/vector-icons';
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import { getFavoriteDestinations, deleteCustomDestination } from '../services/trips';
 import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
 import { estimateFee } from '../services/trips';
 import {getDistance} from 'geolib';
 
-const {width, height} = Dimensions.get("window");
+const TripsAvailableScreen = ({navigation}) => {
 
-const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.02;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+    const {user} = useContext(FiuberContext);
+    const [trips, setTrips] = useState(null);
+    // const showModal = () => setModalVisible(true);
+    // const hideModal = () => setModalVisible(false);
 
-const FavoriteDestinationsScreen = ({navigation}) => {
-
-  const {
-    user, 
-    currentLocation, 
-    setDestination, 
-    setTrip, 
-    setTripInfo,
-    setLoadingFee,
-    favoriteDestinations, 
-    setFavoriteDestinations} = useContext(FiuberContext);
-    const [nameToDelete, setNameToDelete] = useState('');
-    const [modalVisible, setModalVisible] = useState(false);
-
-    const showModal = () => setModalVisible(true);
-    const hideModal = () => setModalVisible(false);
-
-    const startTrip = async (destination) => {
-        setLoadingFee(true)
-        const address = {
-            description: destination.custom_name,
-            latitude: destination.latitude,
-            longitude: destination.longitude,
-            longitudeDelta: LONGITUDE_DELTA,
-            latitudeDelta: LATITUDE_DELTA
-        }
-
-        setDestination(address)
-
-        navigation.navigate('Home')
-
-        const distanceInMeters = getDistance(
-            {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
-            {latitude: address.latitude, longitude: address.longitude}
-        )
-        const fee = await estimateFee(distanceInMeters);
-
-        setTrip({estimatedFee: fee.totalCost.toFixed(6)})
-        setTripInfo(true)
-        setLoadingFee(false)
-    }
 
     const ListEmptyComponent=()=> {
       return (
@@ -63,32 +23,18 @@ const FavoriteDestinationsScreen = ({navigation}) => {
         </View>
       );
     }
-
-    const handleDelete = async () => {
-      try {
-          const response = await deleteCustomDestination(user.jwt, nameToDelete);
-          if(response.detail){
-            alert("The custom destination couldn't be deleted")
-            console.log(response.detail)
-          } else {
-            const fetched_destinations = await getFavoriteDestinations(user.jwt);
-            if (!fetched_destinations.detail){
-              console.log("Destinations customs:",fetched_destinations);
-              setFavoriteDestinations(fetched_destinations);
-            }
-          }
-          hideModal()
-          
-      } catch(err){
-          console.log(err)
-          alert(err.message)
+    
+    const fetchAvailableTrips = async () => {
+        try {
+            console.log("Searching for trips")
+        } catch (e) {
+          console.log(e);
+        }
       }
-    }
-
-    const handleCancelDelete = () => {
-      setNameToDelete('')
-      hideModal()
-    }
+    
+      useEffect(() => {
+        fetchAvailableTrips();
+      }, []);
 
     const renderItem=({item})=>{
       return (
@@ -106,6 +52,19 @@ const FavoriteDestinationsScreen = ({navigation}) => {
           </View>
       )
     }
+
+    useEffect(() => {
+        async function fetchDestination(){
+          const fetched_destinations = await getFavoriteDestinations(user.jwt);
+          if (!fetched_destinations.detail){
+            console.log("Destinations customs:",fetched_destinations);
+            setFavoriteDestinations(fetched_destinations);
+            return;
+          }
+        }
+
+        fetchDestination();
+      }, [])
 
 
     return (
@@ -135,7 +94,7 @@ const FavoriteDestinationsScreen = ({navigation}) => {
     )
 }
 
-export default FavoriteDestinationsScreen
+export default TripsAvailableScreen
 
 const styles = StyleSheet.create({
   container: {

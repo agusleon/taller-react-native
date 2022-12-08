@@ -1,24 +1,32 @@
 /* eslint-disable no-unused-vars */
 import React, {useContext} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {Button} from 'react-native-paper';
+import {Button, Avatar} from 'react-native-paper';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth, logout } from '../firebase';
 
 const CustomDrawer = (props) => {
     
-    const {loggedIn, setLoggedIn, role, setRole, user} = useContext(FiuberContext);
+    const {loggedIn, setLoggedIn, setDestination, setCurrentLocation, setRole, user} = useContext(FiuberContext);
 
     const handleLogout = () => {
+        
         logout(auth);
+        setRole('');
+        setCurrentLocation('');
+        setDestination('')
         setLoggedIn(false);
     }
 
     return (
         <View style={{flex:1}}>
-            <View style={styles.container}>
-                <Text>{user.name}</Text>
+            <View style={styles.user_container}>
+                <Avatar.Image
+                size={100}
+                source={{uri:'https://avatars.dicebear.com/api/big-smile/'+user.uid+'.png'}}
+                />
+                <Text style={styles.user_name}>{user.name}</Text>
             </View>
             <DrawerContentScrollView {...props} >
                 <DrawerItemList {...props}/>
@@ -35,11 +43,16 @@ const CustomDrawer = (props) => {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    user_container: {
         height:'30%',
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    user_name: {
+        fontWeight: 'bold',
+        fontSize: 20,
+        marginTop: 10
     },
     button_logout: {
         margin:10

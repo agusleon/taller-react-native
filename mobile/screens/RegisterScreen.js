@@ -1,26 +1,44 @@
 /* eslint-disable no-unused-vars */
-import  React, {useState, useContext, useEffect} from 'react';
-import { StyleSheet, View, SafeAreaView} from 'react-native';
+import  React, {useState, useContext} from 'react';
+import { StyleSheet, View, SafeAreaView, Dimensions, Keyboard} from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator} from 'react-native-paper';
 import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
 import { createUser } from '../services/users';
-import { getDefaultDestination } from '../services/trips';
-
 import * as Location from 'expo-location';
+import { getCurrentLocation } from '../services/location';
+
+const {width, height} = Dimensions.get("window");
+
+const ASPECT_RATIO = width / height;
+const LATITUDE_DELTA = 0.02;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+
 export default function RegisterScreen({navigation}) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
     const [wallet, setWallet] = useState('')
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false)
+    const [keyboardOpen, setKeyboardOpen] = useState(false)
     const [confirmedPassword, setConfirmedPassword] = useState('')
 
+    Keyboard.addListener(
+        'keyboardDidShow',
+        () => {
+            setKeyboardOpen(true)
+        }
+    );
+    Keyboard.addListener(
+        'keyboardDidHide',
+        () => {
+            setKeyboardOpen(false)
+        }
+    );
 
-
-    const {role, setUser, setHasDefaultDestination, setDefaultDestination,setCurrentDestination, setLoggedIn} = useContext(FiuberContext);
+    const {role, setUser, setCurrentLocation, setLoggedIn} = useContext(FiuberContext);
     
     const handleRegister = async () => {
         setLoading(true);
@@ -29,49 +47,36 @@ export default function RegisterScreen({navigation}) {
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
             
-            console.log("Usuario creado en firebase con rol ", role, " y mail ", email);
             const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
-            console.log("Usuario creado en base de datos con info ", user_response);
-            if (role == 'passenger'){
 
-                let { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    console.log('Permission to access location was denied');
-                    //setHasDefaultDestination(false);
-                    return;
-                }
-            
-                let location = await Location.getCurrentPositionAsync({});
-               
+            const location = await getCurrentLocation();
 
-                //const destination = await getDefaultDestination(idTokenResult.token);
-                //console.log(destination);
-                if (location == ''){
-                    setHasDefaultDestination(false);
-                    console.log("Usuario no tiene default destination");
-                } else {
-                
-                    let { longitude, latitude } = location.coords;
+            let { longitude, latitude } = location.coords;
 
-                    let regionName = await Location.reverseGeocodeAsync({
-                        longitude,
-                        latitude,
-                    });
-                    const street = (regionName[0].street)
-                    const streetNumber = regionName[0].streetNumber
-                    const city = regionName[0].city
-                    const description = `${street} ${streetNumber}, ${city}`
-                    const default_destination = {
-                        description: description,
-                        longitude:location.coords.longitude,
-                        latitude:location.coords.latitude
-                    }
-                    setCurrentDestination(default_destination);
-                    setDefaultDestination(default_destination);
-                    setHasDefaultDestination(true);
-                    
-                }
+            let regionName = await Location.reverseGeocodeAsync({
+                longitude,
+                latitude,
+            });
+
+            const street = (regionName[0].street)
+            const streetNumber = regionName[0].streetNumber
+            const city = regionName[0].city
+
+            const description = `${street} ${streetNumber}, ${city}`
+
+            console.log(description)
+
+            const address = {
+                description: description,
+                longitude:location.coords.longitude,
+                latitude:location.coords.latitude,
+                longitudeDelta:  LONGITUDE_DELTA,
+                latitudeDelta:  LATITUDE_DELTA
             }
+
+            setCurrentLocation(address);
+            
+            
             const user = {
                 uid: user_response.uid,
                 name: user_response.name,
@@ -80,9 +85,10 @@ export default function RegisterScreen({navigation}) {
                 password: password,
                 jwt: idTokenResult.token,
             }
+
             setUser(user)
-            setHasDefaultDestination(false);
-            setLoggedIn(true);
+            setLoggedIn(true)
+            setLoading(false)
         } catch (error) {
             console.log(error);
             alert(error.message);
@@ -90,64 +96,74 @@ export default function RegisterScreen({navigation}) {
         }
         
     }
+    if(loading){
 
-    return (
-        <SafeAreaView style={styles.container}>
-                <View style={styles.small_container}>
-                    <Text style={styles.title}>Register</Text>
-                    <View style={styles.input_container}>
-                        <TextInput
-                            label="Username"
-                            value={username}
-                            autoCapitalize='none'
-                            onChangeText={username => setUserName(username)}
-                            left={<TextInput.Icon icon="account" />}
-                        />
-                        <TextInput
-                            label="Email"
-                            value={email}
-                            autoCapitalize='none'
-                            onChangeText={email => setEmail(email)}
-                            left={<TextInput.Icon icon="at" />}
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>FIUBER</Text>
+                <ActivityIndicator style={styles.activityIndicator} size="large" visible={true} textContent={'Loading...'} />
+            </View>
+        )
+    } else {
+
+        return (
+            <SafeAreaView style={styles.container}>
+                    <View style={keyboardOpen ? styles.small_container_with_keyboard : styles.small_container_without_keyboard}>
+                        <Text style={styles.title}>Register</Text>
+                        <View style={styles.input_container}>
+                            <TextInput
+                                label="Username"
+                                value={username}
+                                autoCapitalize='none'
+                                onChangeText={username => setUserName(username)}
+                                left={<TextInput.Icon icon="account" />}
                             />
-                        <TextInput
-                            label="Wallet"
-                            value={wallet}
-                            autoCapitalize='none'
-                            onChangeText={wallet => setWallet(wallet)}
-                            left={<TextInput.Icon icon="bitcoin" />}
-                            />
-                        <TextInput
-                            label="Password"
-                            value={password}
-                            autoCapitalize='none'
-                            onChangeText={password => setPassword(password)}
-                            secureTextEntry
-                            left={<TextInput.Icon icon="lock-outline" />}
-                            />
-                        <TextInput
-                            label="Confirm password"
-                            autoCapitalize='none'
-                            onChangeText={confirmed => setConfirmedPassword(confirmed)}
-                            secureTextEntry
-                            left={<TextInput.Icon icon="lock-outline" />}
-                            />
+                            <TextInput
+                                label="Email"
+                                value={email}
+                                autoCapitalize='none'
+                                onChangeText={email => setEmail(email)}
+                                left={<TextInput.Icon icon="at" />}
+                                />
+                            <TextInput
+                                label="Wallet"
+                                value={wallet}
+                                autoCapitalize='none'
+                                onChangeText={wallet => setWallet(wallet)}
+                                left={<TextInput.Icon icon="bitcoin" />}
+                                />
+                            <TextInput
+                                label="Password"
+                                value={password}
+                                autoCapitalize='none'
+                                onChangeText={password => setPassword(password)}
+                                secureTextEntry
+                                left={<TextInput.Icon icon="lock-outline" />}
+                                />
+                            <TextInput
+                                label="Confirm password"
+                                autoCapitalize='none'
+                                onChangeText={confirmed => setConfirmedPassword(confirmed)}
+                                secureTextEntry
+                                left={<TextInput.Icon icon="lock-outline" />}
+                                />
+                        </View>
+                        {(password != confirmedPassword) ? (
+                            <Text style={{color:'red'}}>
+                                Passwords do not match
+                            </Text>
+                            ) :  
+                            <Text></Text>
+                        }
+                        {loading ? <><Text style={styles.activityIndicator}>Loading...</Text><ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} /></>
+                    : <Text></Text>}
+                        <Button mode="outlined" disabled={(password != confirmedPassword)} onPress={handleRegister}>
+                            Register
+                        </Button>
                     </View>
-                    {(password != confirmedPassword) ? (
-                        <Text style={{color:'red'}}>
-                            Passwords do not match
-                        </Text>
-                        ) :  
-                        <Text></Text>
-                    }
-                    {loading ? <><Text style={styles.activityIndicator}>Loading...</Text><ActivityIndicator style={styles.activityIndicator} size="large" visible={loading} textContent={'Loading...'} /></>
-                : <Text></Text>}
-                    <Button mode="outlined" disabled={(password != confirmedPassword)} onPress={handleRegister}>
-                        Register
-                    </Button>
-                </View>
-        </SafeAreaView>
-    )
+            </SafeAreaView>
+        )
+    }
 }
 
 const styles = StyleSheet.create({
@@ -157,6 +173,18 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    small_container_with_keyboard: {
+        flexDirection: 'column',
+        height: '90%',
+        width: '80%',
+        justifyContent: 'space-evenly',
+    },
+    small_container_without_keyboard: {
+        flexDirection: 'column',
+        height: '80%',
+        width: '80%',
+        justifyContent: 'space-evenly',
     },
     small_container: {
         flexDirection: 'column',

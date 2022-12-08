@@ -1,4 +1,4 @@
-
+import { URL_USUARIOS } from "../utils/vars";
 
 const createUser = async (name, wallet, role, uid, jwt) => {
 
@@ -9,7 +9,7 @@ const createUser = async (name, wallet, role, uid, jwt) => {
     });
 
     console.log("Sending this body: ",body);
-    const url = 'https://fiuber-api-usuarios-node.herokuapp.com/users/'+uid;
+    const url = URL_USUARIOS + '/users/'+uid;
     const bearer = 'Bearer '+jwt;
     try {
         const response = await fetch(url,
@@ -32,7 +32,7 @@ const createUser = async (name, wallet, role, uid, jwt) => {
 
 const getUser = async (uid, jwt) => {
 
-    const url = 'https://fiuber-api-usuarios-node.herokuapp.com/users/'+uid;
+    const url = URL_USUARIOS + '/users/'+uid;
     const bearer = 'Bearer '+jwt;
     try {
         const response = await fetch(url,
@@ -44,6 +44,9 @@ const getUser = async (uid, jwt) => {
                 'Content-Type': 'application/json',
               },
         });
+        console.log("RESPONSE2")
+        console.log(response);
+        console.log("RESPONSE")
         const json = await response.json();
         return json;
     } catch (err) {
@@ -53,17 +56,16 @@ const getUser = async (uid, jwt) => {
 
 };
 
-const updateUserInfo = async( uid, jwt,name, wallet,role) => {
+const updateUserInfo = async( uid, jwt,name, wallet, role) => {
 
   const body = JSON.stringify({
     name,
     wallet,
     roles: [role],
-   
   });
 
   console.log("Sending this body: ",body);
-  const url = 'https://fiuber-api-usuarios-node.herokuapp.com/users/'+uid;
+  const url = URL_USUARIOS + '/users/'+uid;
   const bearer = 'Bearer '+jwt;
   try {
     const response = await fetch(url,
