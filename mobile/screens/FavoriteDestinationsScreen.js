@@ -19,12 +19,12 @@ const FavoriteDestinationsScreen = ({navigation}) => {
   const {
     user, 
     currentLocation, 
-    setDestination, 
-    setTrip, 
-    setTripInfo,
     setLoadingFee,
+    setFee,
     favoriteDestinations, 
-    setFavoriteDestinations} = useContext(FiuberContext);
+    setStatus,
+    setFavoriteDestinations,
+    setDestination} = useContext(FiuberContext);
     const [nameToDelete, setNameToDelete] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -51,8 +51,8 @@ const FavoriteDestinationsScreen = ({navigation}) => {
         )
         const fee = await estimateFee(distanceInMeters);
 
-        setTrip({estimatedFee: fee.totalCost.toFixed(6)})
-        setTripInfo(true)
+        setFee(fee.totalCost.toFixed(6))
+        setStatus(5)
         setLoadingFee(false)
     }
 
@@ -73,7 +73,6 @@ const FavoriteDestinationsScreen = ({navigation}) => {
           } else {
             const fetched_destinations = await getFavoriteDestinations(user.jwt);
             if (!fetched_destinations.detail){
-              console.log("Destinations customs:",fetched_destinations);
               setFavoriteDestinations(fetched_destinations);
             }
           }

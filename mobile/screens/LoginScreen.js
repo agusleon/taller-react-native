@@ -21,7 +21,7 @@ export default function LoginScreen({navigation}) {
     const [loading, setLoading] = useState(false);
     const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-    const {setLoggedIn, setRole, role, setCurrentLocation, setUser, setFavoriteDestinations, user} = useContext(FiuberContext);
+    const {setLoggedIn, setRole, role, setCurrentLocation, setUser, currentLocation, setFavoriteDestinations, user, setFocusLocation} = useContext(FiuberContext);
 
     Keyboard.addListener(
         'keyboardDidShow',
@@ -41,7 +41,6 @@ export default function LoginScreen({navigation}) {
         setLoading(true);
       
         try {
-            console.log("Buscando usuario...");
 
             // se loggea el usuario en firebase
             await logInWithEmailAndPassword(email, password);
@@ -53,23 +52,17 @@ export default function LoginScreen({navigation}) {
             const user_response = await getUser(user_uid, idTokenResult.token);
             console.log(user_response)
 
+            // se busca la current location
             const location = await getCurrentLocation();
-
             let { longitude, latitude } = location.coords;
-
             let regionName = await Location.reverseGeocodeAsync({
                 longitude,
                 latitude,
             });
-
             const street = (regionName[0].street)
             const streetNumber = regionName[0].streetNumber
             const city = regionName[0].city
-
             const description = `${street} ${streetNumber}, ${city}`
-
-            console.log(description)
-
             const address = {
                 description: description,
                 longitude:location.coords.longitude,
@@ -77,11 +70,12 @@ export default function LoginScreen({navigation}) {
                 longitudeDelta:  LONGITUDE_DELTA,
                 latitudeDelta:  LATITUDE_DELTA
             }
-
             setCurrentLocation(address);
+            setFocusLocation(address)
+            console.log(currentLocation)
             
 
-            // se guarda el usuario actual en el context
+            // // se guarda el usuario actual en el context y su rol
             const current_user = {
                 uid: user_response.uid,
                 name: user_response.name,
@@ -90,24 +84,11 @@ export default function LoginScreen({navigation}) {
                 wallet: user_response.wallet,
                 jwt: idTokenResult.token,
             }
-
-            //mock user
-            // const current_user = {
-            //     uid: "Jtxxfo39VzcbqumHxjdDlgUjdkk2",
-            //     name: "Agus",
-            //     password: "password",
-            //     email: "agusleonw@gmail.com",
-            //     wallet: "123",
-            //     jwt: idTokenResult.token
-            // }
-
-
-            console.log(current_user)
-            
             setUser(current_user)
-            // setRole(user_response.roles[0])
-            setRole("passenger")
-            // se cambia el contexto
+            console.log(current_user)
+            setRole(user_response.roles[0])
+
+            // // se cambia el contexto
             setLoggedIn(true)
             setLoading(false)
            
@@ -123,7 +104,6 @@ export default function LoginScreen({navigation}) {
         async function fetchaData() {
             if(role && role == "passenger"){
                 const fetched_destinations = await getFavoriteDestinations(user.jwt);
-                console.log(fetched_destinations)
                 if (!fetched_destinations.detail && fetched_destinations.length > 0){
                     console.log("Destinations customs:",fetched_destinations);
                     setFavoriteDestinations(fetched_destinations);

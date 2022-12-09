@@ -44,9 +44,7 @@ const getUser = async (uid, jwt) => {
                 'Content-Type': 'application/json',
               },
         });
-        console.log("RESPONSE2")
-        console.log(response);
-        console.log("RESPONSE")
+
         const json = await response.json();
         return json;
     } catch (err) {

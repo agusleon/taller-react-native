@@ -4,13 +4,13 @@ import { FiuberContext } from '../context/FiuberContext';
 
 const GooglePlacesInput = ({placeholder, onPlaceSelected}) => {
 
-  const {favoriteDestinations, setTripInfo} = useContext(FiuberContext);
+  const {favoriteDestinations, setStatus} = useContext(FiuberContext);
   const [predefinedPlacesArray, setPredefinedPlacesArray] = useState([]);
 
   useEffect(() => {
     async function fetchaData() {
         if(favoriteDestinations.length > 0){
-          console.log("Renderizo")
+
           const data = favoriteDestinations.map(place => {
             return {
               description: place.custom_name,
@@ -48,7 +48,6 @@ const GooglePlacesInput = ({placeholder, onPlaceSelected}) => {
         }
       }}
       onPress={(data,details = null) => {
-        setTripInfo(true)
         onPlaceSelected(details);
       }}
       ref={placesRef}

@@ -43,29 +43,26 @@ export default function RegisterScreen({navigation}) {
     const handleRegister = async () => {
         setLoading(true);
         try {
+
+            // se registra el usuario en firebase
             await registerUserWithEmailAndPassword(username, email, password, role);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
             
+            // se crea el usuario en firestore
             const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
 
+            // se busca la current location del user
             const location = await getCurrentLocation();
-
             let { longitude, latitude } = location.coords;
-
             let regionName = await Location.reverseGeocodeAsync({
                 longitude,
                 latitude,
             });
-
             const street = (regionName[0].street)
             const streetNumber = regionName[0].streetNumber
             const city = regionName[0].city
-
             const description = `${street} ${streetNumber}, ${city}`
-
-            console.log(description)
-
             const address = {
                 description: description,
                 longitude:location.coords.longitude,
@@ -73,10 +70,9 @@ export default function RegisterScreen({navigation}) {
                 longitudeDelta:  LONGITUDE_DELTA,
                 latitudeDelta:  LATITUDE_DELTA
             }
-
             setCurrentLocation(address);
             
-            
+            // se guarda el usuario en el context (su rol ya se guardo cuando eligio como registrarse)
             const user = {
                 uid: user_response.uid,
                 name: user_response.name,
@@ -85,10 +81,12 @@ export default function RegisterScreen({navigation}) {
                 password: password,
                 jwt: idTokenResult.token,
             }
-
             setUser(user)
+
+            // se cambia el contexto
             setLoggedIn(true)
             setLoading(false)
+            
         } catch (error) {
             console.log(error);
             alert(error.message);
