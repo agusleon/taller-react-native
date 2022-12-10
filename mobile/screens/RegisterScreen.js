@@ -8,7 +8,7 @@ import { auth } from '../firebase';
 import { createUser } from '../services/users';
 import * as Location from 'expo-location';
 import { getCurrentLocation } from '../services/location';
-import { getSuggestions } from '../services/utilApi';
+import { getSuggestions } from '../services/cars';
 import { v4 as uuid } from 'uuid';
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 
