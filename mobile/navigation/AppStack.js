@@ -9,6 +9,9 @@ import { FiuberContext } from '../context/FiuberContext';
 import WalletScreen from '../screens/WalletScreen';
 import FavoriteDestinationsScreen from '../screens/FavoriteDestinationsScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import DriverInfoScreen from '../screens/DriverInfoScreen';
+import RateUserScreen from '../screens/RateUserScreen';
+import PassengerInfoScreen from '../screens/PassengerInfoScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -50,6 +53,17 @@ const AppStack = () => {
                     <Ionicons name="settings-outline" size={22} color={color}/>
                     )
                 }}/>
+            <Drawer.Screen component={DriverInfoScreen} name="Driver Info" options={{
+            drawerIcon: ({color}) => (
+                <Ionicons name="settings-outline" size={22} color={color}/>
+                )
+            }}/>
+    
+            <Drawer.Screen component={RateUserScreen} name="Review Driver" options={{
+            drawerIcon: ({color}) => (
+                <Ionicons name="settings-outline" size={22} color={color}/>
+                )
+            }}/>
             
             </Drawer.Navigator>
         )
@@ -78,7 +92,23 @@ const AppStack = () => {
                         <Ionicons name="settings-outline" size={22} color={color}/>
                         )
                     }}/>
+
+           
+                     <Drawer.Screen component={PassengerInfoScreen} name="Passenger Info" options={{
+                    drawerIcon: ({color}) => (
+                        <Ionicons name="settings-outline" size={22} color={color}/>
+                        )
+                    }}/>
+                    
+                    <Drawer.Screen component={RateUserScreen} name="Review Passenger" options={{
+                    drawerIcon: ({color}) => (
+                        <Ionicons name="settings-outline" size={22} color={color}/>
+                        )
+                    }}/>
+            
                 </Drawer.Navigator>
+
+
                 
             )
     }

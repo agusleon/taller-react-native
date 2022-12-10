@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-import  React, {useState, useContext} from 'react';
-import { StyleSheet, View, SafeAreaView, Dimensions, Keyboard} from 'react-native';
+import  React, {useState, useContext, useCallback,useRef, useEffect} from 'react';
+import { StyleSheet, View, SafeAreaView, Dimensions, Keyboard, Platform} from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator} from 'react-native-paper';
 import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
@@ -8,6 +8,9 @@ import { auth } from '../firebase';
 import { createUser } from '../services/users';
 import * as Location from 'expo-location';
 import { getCurrentLocation } from '../services/location';
+import { getSuggestions } from '../services/utilApi';
+import { v4 as uuid } from 'uuid';
+import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 
 const {width, height} = Dimensions.get("window");
 
@@ -24,6 +27,13 @@ export default function RegisterScreen({navigation}) {
     const [loading, setLoading] = useState(false)
     const [keyboardOpen, setKeyboardOpen] = useState(false)
     const [confirmedPassword, setConfirmedPassword] = useState('')
+    const [suggestionsList, setSuggestionsList] = useState(null)
+    const [selectedItem, setSelectedItem] = useState(null)
+    const [patent, setPatent] = useState('');
+
+    
+    const searchRef = useRef(null)
+    const dropdownController = useRef(null)
 
     Keyboard.addListener(
         'keyboardDidShow',
@@ -39,6 +49,29 @@ export default function RegisterScreen({navigation}) {
     );
 
     const {role, setUser, setCurrentLocation, setLoggedIn} = useContext(FiuberContext);
+
+    const onOpenSuggestionsList = useCallback(isOpened => {}, [])
+    const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
+
+    async function getSuggestionsList(q){
+        console.log("entro aca")
+        const filterToken = q.toLowerCase()
+        console.log('getSuggestions', q)
+        const response = await getSuggestions(q.toLowerCase())
+        
+        console.log("items ", response)
+        
+        const suggestions = response.map(r => ({
+            id: uuid(), 
+            title: `${r.make} ${r.model} ${r.year}`
+        }))
+        
+        setSuggestionsList(suggestions)
+        console.log("suggestions ", [...new Set(suggestions)])
+        console.log("la list", suggestionsList)
+        }
+
+
     
     const handleRegister = async () => {
         setLoading(true);
@@ -50,39 +83,55 @@ export default function RegisterScreen({navigation}) {
             const idTokenResult = await auth.currentUser.getIdTokenResult();
             
             // se crea el usuario en firestore
-            const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
+            if(role == 'passenger'){
+                const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
 
-            // se busca la current location del user
-            const location = await getCurrentLocation();
-            let { longitude, latitude } = location.coords;
-            let regionName = await Location.reverseGeocodeAsync({
-                longitude,
-                latitude,
-            });
-            const street = (regionName[0].street)
-            const streetNumber = regionName[0].streetNumber
-            const city = regionName[0].city
-            const description = `${street} ${streetNumber}, ${city}`
-            const address = {
-                description: description,
-                longitude:location.coords.longitude,
-                latitude:location.coords.latitude,
-                longitudeDelta:  LONGITUDE_DELTA,
-                latitudeDelta:  LATITUDE_DELTA
+                // se busca la current location del user
+                const location = await getCurrentLocation();
+                let { longitude, latitude } = location.coords;
+                let regionName = await Location.reverseGeocodeAsync({
+                    longitude,
+                    latitude,
+                });
+                const street = (regionName[0].street)
+                const streetNumber = regionName[0].streetNumber
+                const city = regionName[0].city
+                const description = `${street} ${streetNumber}, ${city}`
+                const address = {
+                    description: description,
+                    longitude:location.coords.longitude,
+                    latitude:location.coords.latitude,
+                    longitudeDelta:  LONGITUDE_DELTA,
+                    latitudeDelta:  LATITUDE_DELTA
+                }
+                setCurrentLocation(address);
+                
+                // se guarda el usuario en el context (su rol ya se guardo cuando eligio como registrarse)
+                const user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    email: user_response.email,
+                    wallet: user_response.wallet,
+                    password: password,
+                    jwt: idTokenResult.token,
+                }
+                setUser(user)
+            }else{
+                const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token, selectedItem, patent);
+                const user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    email: user_response.email,
+                    wallet: user_response.wallet,
+                    password: password,
+                    jwt: idTokenResult.token,
+                    car_model: user_response.car_description.title,
+                    car_patent: user_response.patent
+                }
+                setUser(user)
+
             }
-            setCurrentLocation(address);
             
-            // se guarda el usuario en el context (su rol ya se guardo cuando eligio como registrarse)
-            const user = {
-                uid: user_response.uid,
-                name: user_response.name,
-                email: user_response.email,
-                wallet: user_response.wallet,
-                password: password,
-                jwt: idTokenResult.token,
-            }
-            setUser(user)
-
             // se cambia el contexto
             setLoggedIn(true)
             setLoading(false)
@@ -94,6 +143,11 @@ export default function RegisterScreen({navigation}) {
         }
         
     }
+
+    useEffect((q)=>{
+        getSuggestionsList(q)
+    },[])
+
     if(loading){
 
         return (
@@ -129,7 +183,47 @@ export default function RegisterScreen({navigation}) {
                                 autoCapitalize='none'
                                 onChangeText={wallet => setWallet(wallet)}
                                 left={<TextInput.Icon icon="bitcoin" />}
-                                />
+                            />
+                            {(role=='passenger') ? 
+                                <></>
+                            :
+                            <View>
+                            <TextInput
+                                label="Patente"
+                                value={patent}
+                                autoCapitalize='none'
+                                onChangeText={patent => setPatent(patent)}
+                                left={<TextInput.Icon icon="car" />}
+                            />
+                            <AutocompleteDropdown
+                                    ref={searchRef}
+                                    controller={controller => {
+                                        dropdownController.current = controller
+                                      }}
+                                    direction={Platform.select({ ios: 'down' })}
+                                    onClear={onClearPress}
+                                    // initialValue={'1'}
+                                    
+                                    dataSet={suggestionsList}
+                                    onChangeText={getSuggestionsList}
+                                    onSelectItem={item => {
+                                        item && setSelectedItem(item)
+                                      }}
+                                    debounce={600}
+                                    suggestionsListMaxHeight={Dimensions.get('window').height * 0.4}
+                                    onOpenSuggestionsList={onOpenSuggestionsList}
+                                    //  onSubmit={(e) => onSubmitSearch(e.nativeEvent.text)}
+                                    textInputProps={
+                                        {placeholder: 'Type 3+ letters car model'}
+                                        
+                                       
+                                    }
+                            />
+                            </View>
+                            
+                            }
+
+                                
                             <TextInput
                                 label="Password"
                                 value={password}

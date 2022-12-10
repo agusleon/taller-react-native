@@ -12,6 +12,8 @@ const ContextProvider = ({children}) => {
         password:'',
         wallet:'',
         jwt:'',
+        car_model: '',
+        car_patent: ''
     }
 
     const address_state = {
@@ -55,6 +57,10 @@ const ContextProvider = ({children}) => {
     const [driverLocation, setDriverLocation] = React.useState(false);
     const [onGoing, setOnGoing] = React.useState(false);
     const [focusLocation, setFocusLocation] = React.useState()
+    const [hasDriver, setHasDriver] = React.useState(false);
+    const [hasPassenger, setHasPassenger] = React.useState(false);
+    const [userReviewed, setUserReviewed] = React.useState(false);
+   
 
     // STATUS
 
@@ -94,7 +100,11 @@ const ContextProvider = ({children}) => {
             gotDriver, setGotDriver,
             driverLocation, setDriverLocation,
             focusLocation, setFocusLocation,
-            onGoing, setOnGoing
+            onGoing, setOnGoing,
+            hasDriver, setHasDriver,
+            hasPassenger, setHasPassenger,
+            userReviewed, setUserReviewed,
+            
         }}>
             {children}
         </FiuberContext.Provider>

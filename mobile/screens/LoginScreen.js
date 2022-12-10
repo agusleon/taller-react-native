@@ -75,7 +75,7 @@ export default function LoginScreen({navigation}) {
             console.log(currentLocation)
             
 
-            // // se guarda el usuario actual en el context y su rol
+            // se guarda el usuario actual en el context y su rol
             const current_user = {
                 uid: user_response.uid,
                 name: user_response.name,
