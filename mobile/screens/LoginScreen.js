@@ -7,6 +7,7 @@ import { getUser } from '../services/users';
 import { getCurrentLocation } from '../services/location';
 import * as Location from 'expo-location';
 import { getFavoriteDestinations } from '../services/trips';
+import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
 
@@ -78,6 +79,7 @@ export default function LoginScreen({navigation}) {
                 latitudeDelta:  LATITUDE_DELTA
             }
 
+            await postEvent('LOGIN');
             setCurrentLocation(address);
             
 

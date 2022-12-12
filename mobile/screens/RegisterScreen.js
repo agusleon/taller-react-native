@@ -8,6 +8,7 @@ import { auth } from '../firebase';
 import { createUser } from '../services/users';
 import * as Location from 'expo-location';
 import { getCurrentLocation } from '../services/location';
+import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
 
@@ -74,6 +75,7 @@ export default function RegisterScreen({navigation}) {
                 latitudeDelta:  LATITUDE_DELTA
             }
 
+            await postEvent('REGISTER');
             setCurrentLocation(address);
             
             

@@ -15,6 +15,7 @@ import {
   // getDocs,
   // where,
 } from "firebase/firestore";
+import { postEvent } from './services/events';
  
 const firebaseConfig = {
   apiKey: "AIzaSyCo1TynEo7rDo3J0vlU6OlksN-TBuiVGhA",
@@ -57,6 +58,7 @@ const db = getFirestore(app);
 const sendPasswordReset = async (email) => {
   try {
     await sendPasswordResetEmail(auth, email);
+    await postEvent('PASSWORD_RECOVERY');
     alert("Password reset link sent!");
   } catch (err) {
     console.error(err);
