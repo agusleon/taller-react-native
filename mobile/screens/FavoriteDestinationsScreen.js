@@ -7,6 +7,7 @@ import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
 import { estimateFee } from '../services/trips';
 import {getDistance} from 'geolib';
+import { TRIP_INFO } from '../utils/vars';
 
 const {width, height} = Dimensions.get("window");
 
@@ -49,10 +50,10 @@ const FavoriteDestinationsScreen = ({navigation}) => {
             {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
             {latitude: address.latitude, longitude: address.longitude}
         )
-        const fee = await estimateFee(distanceInMeters);
+        const estimated_fee = await estimateFee(distanceInMeters);
 
-        setFee(fee.totalCost.toFixed(6))
-        setStatus(5)
+        setFee(Number(estimated_fee.totalCost.toFixed(6)))
+        setStatus(TRIP_INFO)
         setLoadingFee(false)
     }
 

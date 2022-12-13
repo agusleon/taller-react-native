@@ -8,7 +8,7 @@ import { auth, logout } from '../firebase';
 
 const CustomDrawer = (props) => {
     
-    const {setStatus, setDriver, setShowDirections, setLoggedIn, setDestination, setCurrentLocation, setRole, user} = useContext(FiuberContext);
+    const {setStatus, setDriver, setShowDirections, setLoggedIn, setDestination, setCurrentLocation, setRole, user, setPassenger} = useContext(FiuberContext);
 
     const handleLogout = () => {
         
@@ -20,6 +20,7 @@ const CustomDrawer = (props) => {
         setStatus(0)
         setDriver(false)
         setShowDirections(false)
+        setPassenger(false)
     }
 
     return (

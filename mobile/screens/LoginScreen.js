@@ -6,7 +6,7 @@ import { FiuberContext } from '../context/FiuberContext';
 import { getUser } from '../services/users';
 import { getCurrentLocation } from '../services/location';
 import * as Location from 'expo-location';
-import { getFavoriteDestinations } from '../services/trips';
+import { getFavoriteDestinations, updateDriverPosition } from '../services/trips';
 
 const {width, height} = Dimensions.get("window");
 
@@ -52,6 +52,14 @@ export default function LoginScreen({navigation}) {
             const user_response = await getUser(user_uid, idTokenResult.token);
             console.log(user_response)
 
+            // se chequea si esta bloqueado, si lo esta, retorna. Si no lo esta, sigue.
+            if (user_response.blocked) {
+                alert("You cannot enter the app")
+                console.log("User blocked")
+                setLoading(false)
+                return;
+            }
+            
             // se busca la current location
             const location = await getCurrentLocation();
             let { longitude, latitude } = location.coords;
@@ -59,6 +67,7 @@ export default function LoginScreen({navigation}) {
                 longitude,
                 latitude,
             });
+            console.log(location)
             const street = (regionName[0].street)
             const streetNumber = regionName[0].streetNumber
             const city = regionName[0].city
@@ -75,7 +84,7 @@ export default function LoginScreen({navigation}) {
             console.log(currentLocation)
             
 
-            // // se guarda el usuario actual en el context y su rol
+            // se guarda el usuario actual en el context y su rol
             const current_user = {
                 uid: user_response.uid,
                 name: user_response.name,
@@ -85,10 +94,9 @@ export default function LoginScreen({navigation}) {
                 jwt: idTokenResult.token,
             }
             setUser(current_user)
-            console.log(current_user)
+
             setRole(user_response.roles[0])
 
-            // // se cambia el contexto
             setLoggedIn(true)
             setLoading(false)
            
@@ -102,13 +110,29 @@ export default function LoginScreen({navigation}) {
 
     useEffect(() => {
         async function fetchaData() {
-            if(role && role == "passenger"){
-                const fetched_destinations = await getFavoriteDestinations(user.jwt);
-                if (!fetched_destinations.detail && fetched_destinations.length > 0){
-                    console.log("Destinations customs:",fetched_destinations);
-                    setFavoriteDestinations(fetched_destinations);
+            if(role == "passenger"){
+                try {
+                    const fetched_destinations = await getFavoriteDestinations(user.jwt);
+                    if (!fetched_destinations.detail && fetched_destinations.length > 0){
+                        console.log("Destinations customs:",fetched_destinations);
+                        setFavoriteDestinations(fetched_destinations);
+                    }
+                } catch (err) {
+                    console.log("Could not retrieve favorite destinations: ", err.message)
+                }
+                
+            } else if (role == "driver") {
+                try {
+                    console.log("Updating position from login screen")
+                    const response = await updateDriverPosition(currentLocation, user.jwt)
+                    if (!response.latitude) {
+                        console.log("Could not update position");
+                    }
+                } catch (err) {
+                    console.log("Could not update position: ", err.message)
+                }
             }
-        }
+        
         }
         fetchaData()
         

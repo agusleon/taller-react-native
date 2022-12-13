@@ -1,16 +1,25 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState } from 'react'
 import { View, StyleSheet, TextInput, Dimensions } from 'react-native'
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'; 
 import { ActivityIndicator, Button, Modal, Text, TouchableRipple, Avatar } from 'react-native-paper'
-import Map from '../components/Map'
+import Map from '../components/MapPassenger'
 import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext'
 import GooglePlacesInput from '../components/GooglePlacesInput'
-import { createCustomDestination, createTrip, estimateFee, getTrip } from '../services/trips';
+import { createCustomDestination, createTrip, estimateFee, getTotalFee, getTrip } from '../services/trips';
 import { AntDesign } from '@expo/vector-icons'; 
 import {getDistance} from 'geolib';
 import { getUser } from '../services/users';
 import { getDistanceBetweenTwoPoints } from '../utils/methods';
+import { 
+    BEGIN,
+    AVAILABLE,
+    AWAITING_DRIVER,
+    ON_GOING,
+    TRIP_FINISHED,
+    TRIP_INFO,
+    CREATING_TRIP } from '../utils/vars';
+import { createTransaction, makeDeposit, putPayment } from '../services/payments';
 
 const {width, height} = Dimensions.get("window");
 
@@ -21,8 +30,8 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 export default function HomeScreen ({navigation}) {
 
     const [favoriteName, setFavoriteName] = useState('');
-    const [tripId, setTripId] = useState(null);
-
+    const [loadingPayment, setLoadingPayment] = useState(false);
+    const [paymentMade, setPaymentMade] = useState(false);
 
     const {
         user,
@@ -57,15 +66,22 @@ export default function HomeScreen ({navigation}) {
 
     const handleTripButton = async () => {
 
-        setStatus(6)
+        setStatus(CREATING_TRIP)
         setShowDirections(true)
 
         try {
             const response = await createTrip(user.jwt, currentLocation, destination)
             if(!response.detail){
-                console.log(response.trip_id)
-                setStatus(1)
-                waitForDriver(response.trip_id, 1)
+                const response_payment = await putPayment(user.jwt, response.trip_id, fee, 0, 0)
+                console.log(JSON.stringify(response_payment))
+                setStatus(AVAILABLE)
+                waitForDriver(response.trip_id, AVAILABLE)
+            }
+            else {
+                alert("You have an on going trip")
+                setStatus(BEGIN)
+                setShowDirections(false)
+                console.log(JSON.stringify(response))
             }
             // waitForDriver("5c4a2de1-a744-4e67-afdd-c6282320292b")
 
@@ -84,7 +100,7 @@ export default function HomeScreen ({navigation}) {
                 const response = await getTrip(trip_id,user.jwt);
                 console.log("Searching for driver...")
 
-                if (response.trip_state == 2) {
+                if (response.trip_state == AWAITING_DRIVER) {
                     console.log("Ive got driver")
                     const response_driver = await getUser(response.driver_id, user.jwt);
                     
@@ -93,6 +109,7 @@ export default function HomeScreen ({navigation}) {
                         car_model: response_driver.car_model,
                         car_plate: response_driver.car_plate,
                         name: response_driver.name,
+                        trip_id,
                     }
 
                     const driver_location = {
@@ -100,12 +117,21 @@ export default function HomeScreen ({navigation}) {
                         latitude: response.driver_latitude,
                     }
 
+                    const total_fee = await getTotalFee(response.distance, user.uid, response_driver.uid)
+                    setFee(Number(total_fee.totalCost.toFixed(6)))
+
+                    const tx = await createTransaction(total_fee.totalCost.toFixed(6), trip_id, response_driver.uid, user.jwt);
+
+                    console.log(JSON.stringify(tx))
+
+                    clearInterval(interval)
                     setDriverLocation(driver_location)
                     setGotDriver(true)
                     setDriver(driver_state)
                     setStatus(response.trip_state)
                     checkTrip(trip_id)
-                    clearInterval(interval)
+                    
+
                 }
             } catch (err) {
                 alert(err.message)
@@ -129,7 +155,7 @@ export default function HomeScreen ({navigation}) {
             
             let new_status = response.trip_state
 
-            if (new_status == 2){ // si cambio mi status a AWAITING DRIVER sigo llamando pero esta vez me fijo las coordenadas del driver
+            if (new_status == AWAITING_DRIVER){ // si cambio mi status a AWAITING DRIVER sigo llamando pero esta vez me fijo las coordenadas del driver
                 
                 console.log("Awaiting for driver")
 
@@ -140,7 +166,7 @@ export default function HomeScreen ({navigation}) {
                 setDriverLocation(driver_location)
                 setGotDriver(true)
 
-            } else if (new_status == 3) { // si cambio mi status a ONGOING ahi tengo que seguir llamando pero ademas actualizar mi current location (hay que ver si es viable)
+            } else if (new_status == ON_GOING) { // si cambio mi status a ONGOING ahi tengo que seguir llamando pero ademas actualizar mi current location (hay que ver si es viable)
 
                 console.log("Going to my destination")
 
@@ -163,12 +189,10 @@ export default function HomeScreen ({navigation}) {
                     
                 }
 
-            } else if (new_status == 4){ // si cambio mi status a FINISHED, paro
+            } else if (new_status == TRIP_FINISHED){ // si cambio mi status a FINISHED, paro
                 console.log("Stopping...")
 
                 setCurrentLocation({...focusLocation})
-                setDestination(false)
-                setStatus(0)
                 setShowDirections(false)
                 setGotDriver(false)
                 setOnGoing(false)
@@ -187,14 +211,43 @@ export default function HomeScreen ({navigation}) {
         
     }
 
+    const handleReviewDriver = () => {
+        
+        setDestination(false)
+        setStatus(BEGIN)
+
+    }
+
     const handleFavoriteButton = () => {
         showModal()
+    }
+
+    const handlePaymentButton = async () => {
+
+        setLoadingPayment(true)
+
+        try {
+
+            await makeDeposit(driver.trip_id, user.jwt);
+
+            const response_payment = await putPayment(user.jwt, driver.trip_id, fee, fee, 0)
+            console.log(response_payment)
+            
+            setPaymentMade(true)
+            setLoadingPayment(false)
+            
+        } catch(err) {
+            alert("Could not make payment: ", err.message)
+            console.log("Could not make payment: ", err.message)
+            setLoadingPayment(false)
+        }
+
     }
 
     const handleCancelButton = async () => {
         setDestination(false)
         setFocusLocation({...currentLocation})
-        setStatus(0)
+        setStatus(BEGIN)
         setDriver(false)
         setGotDriver(false)
         setShowDirections(false)
@@ -203,7 +256,7 @@ export default function HomeScreen ({navigation}) {
 
     const handlePlaceSelected = async (details) => {
         
-        setStatus(5)
+        setStatus(TRIP_INFO)
         setLoadingFee(true)
         
         // retrieve destination
@@ -223,11 +276,9 @@ export default function HomeScreen ({navigation}) {
             {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
             {latitude: address.latitude, longitude: address.longitude}
         )
-        const fee = await estimateFee(distanceInMeters);
-        
-        // change destination on trip State
+        const estimated_fee = await estimateFee(distanceInMeters);
 
-        setFee(fee.totalCost.toFixed(6))
+        setFee(Number(estimated_fee.totalCost.toFixed(6)))
         setLoadingFee(false)
     }
 
@@ -247,7 +298,7 @@ export default function HomeScreen ({navigation}) {
             hideModal()
 
         } catch(err){
-            console.log("No se pudo agregar la custom destination");
+            console.log("No se pudo agregar la custom destination", err.message);
         }
     }
 
@@ -284,11 +335,6 @@ export default function HomeScreen ({navigation}) {
                     <Text style={styles.car_text}>{driver.car_model} - {driver.car_plate}</Text>
                 </View>
             </View>
-            
-            
-            <Button style={styles.button} mode="outlined" onPress={handleCancelButton}>
-                Cancel
-            </Button>
           </View>
         );
     }
@@ -305,17 +351,39 @@ export default function HomeScreen ({navigation}) {
     }
 
     const TripFinishedComponent =()=> {
-        return (
-            <View style={styles.container}>
-                <View style={styles.horizontal_container}>
-                    <Text style={styles.text}>Trip finished!</Text>
+
+        if(loadingPayment) {
+            return (
+                <View style={styles.container}>
+                    <View style={styles.horizontal_container}>
+                        <Text style={styles.text}>Making payment...</Text>
+                    </View>
+                    <ActivityIndicator style={styles.activityIndicator} size="large" visible={true} textContent={'Loading...'} />
                 </View>
-                <AntDesign name="checkcircleo" size={24} color="green" />
-                <Button style={styles.button} mode="outlined" onPress={handleCancelButton}>
-                    Pay
-                </Button>
-          </View>
-        );
+            )
+        } else{
+
+            return (
+                <View style={styles.container}>
+                {!paymentMade ?
+                    <View style={styles.small_container}>
+                        <Text style={styles.text}>Trip finished!</Text>
+                        <Text style={styles.text}>Your total fee is: {fee}</Text>
+                        <Button style={styles.button} mode="outlined" onPress={handlePaymentButton}>
+                            Pay
+                        </Button>
+                    </View> :
+                    <View style={styles.small_container}>
+                        <Text style={styles.text}>Payment made</Text>
+                        <AntDesign name="checkcircleo" size={24} color="green" />
+                        <Button style={styles.button} mode="outlined" onPress={handleReviewDriver}>
+                            Review Driver
+                        </Button>
+                    </View>
+                }
+                </View>
+            );
+        }
     }
 
     const TripInfoComponent = () => {
@@ -348,23 +416,6 @@ export default function HomeScreen ({navigation}) {
         );
     }
 
-    const ModalComponent = () => {
-        return(
-        <Modal visible={modalVisible} onDismiss={hideModal} contentContainerStyle={styles.modal}>
-            <Text style={styles.text}>Make it a favorite</Text>
-            <TextInput
-                placeholder='Name it'
-                style={styles.favorite_input}
-                value={favoriteName}
-                onChangeText={name => setFavoriteName(name)}
-            />
-            <Button mode="contained" onPress={handleFavoritePlace}>
-                SAVE
-            </Button>
-        </Modal>
-        );
-    }
-
     const ButtonComponent = () => {
         return(
         <View style={styles.button_container}>
@@ -385,48 +436,59 @@ export default function HomeScreen ({navigation}) {
             
             <TopBar {...navigation} />
 
-            <ModalComponent />
+            <Modal visible={modalVisible} onDismiss={hideModal} contentContainerStyle={styles.modal}>
+                <Text style={styles.text}>Make it a favorite</Text>
+                <TextInput
+                    placeholder='Name it'
+                    style={styles.favorite_input}
+                    value={favoriteName}
+                    onChangeText={name => setFavoriteName(name)}
+                />
+                <Button mode="contained" onPress={handleFavoritePlace}>
+                    SAVE
+                </Button>
+            </Modal>
 
             {!modalVisible &&
                 <View style={styles.card}>
 
                     {/* ESTADO 0: WHERE TO? DESTINATION: NULL CURRENT_LOCATION: SOME */}
-                    {(status == 0) && 
+                    {(status == BEGIN) && 
                         <GooglePlacesInput placeholder='Where to?' onPlaceSelected={(details) => handlePlaceSelected(details)}/>
                     }
 
                     {/* ESTADO 5: INFO TRIP DESTINATION: SOME CURRENT_LOCATION: SOME */}
-                    {status == 5 &&
+                    {status == TRIP_INFO &&
                         <TripInfoComponent/>
                     }
 
-                    {(status == 5) &&
+                    {(status == TRIP_INFO) &&
                         <ButtonComponent/>
                     }
 
                     {/* ESTADO 6: CREATING TRIP DESTINATION: SOME CURRENT_LOCATION: SOME TRIP: NULL */}
-                    {(status == 6) &&
+                    {(status == CREATING_TRIP) &&
                         <CreatingTripComponent/>
                     }
 
                     {/* ESTADO 1: SEARCHING FOR DRIVER DESTINATION: SOME CURRENT_LOCATION: SOME TRIP.DRIVER: FALSE */}
-                    {(status == 1) &&
+                    {(status == AVAILABLE) &&
                         <SearchingDriverComponent/>
                     }
 
                     {/* ESTADO 2: AWAITING FOR DRIVER TO ARRIVE DESTINATION: SOME CURRENT_LOCATION: SOME TRIP.DRIVER: SOME */}
-                    {(status == 2) &&
+                    {(status == AWAITING_DRIVER) &&
                         <AwaitingDriverComponent/>
                         
                     }
 
                     {/* ESTADO 3: ON GOING TRIP DESTINATION: SOME CURRENT_LOCATION: SOME TRIP.DRIVER: SOME */}
-                    {(status == 3) &&
+                    {(status == ON_GOING) &&
                         <OnTripComponent/>
                     }
                     
                     {/* ESTADO 4: TRIP FINISHED DESTINATION: SOME CURRENT_LOCATION: SOME TRIP.DRIVER: SOME */}
-                    {(status == 4) &&
+                    {(status == TRIP_FINISHED) &&
                         <TripFinishedComponent/>
                     }
                     

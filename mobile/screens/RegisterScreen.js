@@ -8,6 +8,7 @@ import { auth } from '../firebase';
 import { createUser } from '../services/users';
 import * as Location from 'expo-location';
 import { getCurrentLocation } from '../services/location';
+import { createWallet } from '../services/payments';
 
 const {width, height} = Dimensions.get("window");
 
@@ -52,6 +53,8 @@ export default function RegisterScreen({navigation}) {
             // se crea el usuario en firestore
             const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
 
+            await createWallet(idTokenResult.token, user_uid)
+
             // se busca la current location del user
             const location = await getCurrentLocation();
             let { longitude, latitude } = location.coords;
@@ -90,6 +93,7 @@ export default function RegisterScreen({navigation}) {
         } catch (error) {
             console.log(error);
             alert(error.message);
+            setLoading(false)
             return;
         }
         
@@ -122,13 +126,6 @@ export default function RegisterScreen({navigation}) {
                                 autoCapitalize='none'
                                 onChangeText={email => setEmail(email)}
                                 left={<TextInput.Icon icon="at" />}
-                                />
-                            <TextInput
-                                label="Wallet"
-                                value={wallet}
-                                autoCapitalize='none'
-                                onChangeText={wallet => setWallet(wallet)}
-                                left={<TextInput.Icon icon="bitcoin" />}
                                 />
                             <TextInput
                                 label="Password"

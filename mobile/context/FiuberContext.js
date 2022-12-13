@@ -28,15 +28,7 @@ const ContextProvider = ({children}) => {
         car_model: '',
         car_plate: '',
         name: '',
-    }
-
-    const trip_state = {
-        id: '',
-        destination: false,
-        status: 0, // CHECK STATUS
-        fee: 0,
-        driver: false,
-        passenger: false
+        trip_id: ''
     }
 
     const [gotDriver, setGotDriver] = React.useState(false);
@@ -47,7 +39,7 @@ const ContextProvider = ({children}) => {
     const [role, setRole] = React.useState('');
     const [user, setUser] = React.useState(user_state);
     const [favoriteDestinations, setFavoriteDestinations] = React.useState([]);
-    const [trip, setTrip] = React.useState(trip_state);
+    const [passenger, setPassenger] = React.useState(false);
     const [status, setStatus] = React.useState(0);
     const [destination, setDestination] = React.useState(address_state);
     const [currentLocation, setCurrentLocation] = React.useState(address_state);
@@ -84,7 +76,6 @@ const ContextProvider = ({children}) => {
             user, setUser,
             favoriteDestinations, setFavoriteDestinations,
             loadingFee, setLoadingFee,
-            trip, setTrip,
             showDirections, setShowDirections,
             currentLocation, setCurrentLocation,
             fee, setFee,
@@ -94,7 +85,8 @@ const ContextProvider = ({children}) => {
             gotDriver, setGotDriver,
             driverLocation, setDriverLocation,
             focusLocation, setFocusLocation,
-            onGoing, setOnGoing
+            onGoing, setOnGoing,
+            passenger, setPassenger
         }}>
             {children}
         </FiuberContext.Provider>
