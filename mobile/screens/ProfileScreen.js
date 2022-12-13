@@ -16,7 +16,7 @@ import { FiuberContext } from '../context/FiuberContext';
 const ProfileScreen = ({navigation}) => {
 
     const {user, role} = useContext(FiuberContext);
-
+    
     return (
       <SafeAreaView style={styles.container}>
         <TopBar {...navigation} />
@@ -48,12 +48,13 @@ const ProfileScreen = ({navigation}) => {
             <Text style={{color:"#777777", marginLeft: 20}}>{role}</Text>
           </View>
 
-          {(role=='passenger') ? 
+
+          {(role == 'passenger') ? 
             <></>
             :
             <View style={styles.row}>
               <Ionicons name="car-outline" color="#777777" size={20}/>
-              {/* <Text style={{color:"#777777", marginLeft: 20}}>{car.model} {car.patent}</Text> */}
+              { <Text style={{color:"#777777", marginLeft: 20}}>{user.car_model} - {user.car_patent}</Text> }
             </View>
           }
         </View>
@@ -61,24 +62,58 @@ const ProfileScreen = ({navigation}) => {
         <View style={styles.infoBoxWrapper}>
             <View style={[styles.infoBox, {
               borderRightColor: '#dddddd',
-              borderRightWidth: 1
+              borderLeftColor: '#dddddd',
+              borderRightWidth: 1,
+              borderLeftWidth:1,
             }]}>
               <Title>0</Title>
               <Caption>Trips</Caption>
             </View>
-            <View style={styles.infoBox}>
-              <Title>x</Title>
-              <Caption>Other info</Caption>
-            </View>
+
+            {role == 'driver' ?
+            <View style={styles.infoBoxDriverDetails}> 
+              <View style={[styles.infoBox, {
+             
+            }]}>
+                <View style={styles.infoBoxDriver}>
+                  <Title>4.9</Title>
+                  <Ionicons name="star" color="#777777" size={20}/>
+                </View>
+                  <Caption>Rating</Caption>
+                </View>
+          
+                </View>
+              :
+              
+               <></>
+               }
+
         </View>
   
         <View style={styles.menuWrapper}>
-          <TouchableRipple onPress={()=>{navigation.navigate('My Destinations')}}>
+        {role == 'passenger' ?
+        <View> 
+          <TouchableRipple onPress={()=>{navigation.navigate('Driver Info')}}>
             <View style={styles.menuItem}>
               <Ionicons name="heart-outline" color="#FF6347" size={25}/>
-              <Text style={styles.menuItemText}>My Destinations</Text>
+              <Text style={styles.menuItemText}>My Driver Info</Text>
             </View>
           </TouchableRipple>
+          <TouchableRipple onPress={()=>{navigation.navigate('My Destinations')}}>
+          <View style={styles.menuItem}>
+            <Ionicons name="heart-outline" color="#FF6347" size={25}/>
+            <Text style={styles.menuItemText}>My Destinations</Text>
+          </View>
+        </TouchableRipple>
+        </View>
+          : 
+          <TouchableRipple onPress={()=>{navigation.navigate('Passenger Info')}}>
+          <View style={styles.menuItem}>
+            <Ionicons name="heart-outline" color="#FF6347" size={25}/>
+            <Text style={styles.menuItemText}>My Passenger Info</Text>
+          </View>
+          </TouchableRipple>
+          }
           <TouchableRipple onPress={() => {navigation.navigate('Wallet')}}>
             <View style={styles.menuItem}>
               <Ionicons name="logo-bitcoin" color="#FF6347" size={25}/>
@@ -132,9 +167,26 @@ const ProfileScreen = ({navigation}) => {
       height: 100,
     },
     infoBox: {
+      width: '30%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      
+    },
+    infoBoxDriver: {
+     
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+  
+      
+    },
+    infoBoxDriverDetails: {
       width: '50%',
       alignItems: 'center',
       justifyContent: 'center',
+      flexDirection: 'row',
+      
+      
     },
     menuWrapper: {
       marginTop: 10,

@@ -192,7 +192,9 @@ const createTrip = async (jwt, source, destination ) => {
 // }
 
 const estimateFee = async (distanceInMeters) => {
+
     const url = URL_BACKOFFICE + '/rules/execute?tripLengthMeters=' + distanceInMeters;
+
     try {
         const response = await fetch(url,
         {
@@ -210,4 +212,80 @@ const estimateFee = async (distanceInMeters) => {
     }
 }
 
-export {createDefaultDestination, getDefaultDestination, createCustomDestination, getFavoriteDestinations, deleteCustomDestination, estimateFee, createTrip}
+const getTrip = async (trip_id, jwt) => {
+
+    const url = URL_VIAJES + '/trips/' + trip_id;
+
+    const bearer = 'Bearer '+jwt;
+
+    try {
+        const response = await fetch(url,
+            {
+                method:'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': bearer,
+                    'Content-Type': 'application/json',
+                  },
+            });
+        const json = await response.json();
+        return json;
+    } catch (err) {
+        console.error(err);
+        alert("error", err.message)
+    }
+}
+
+const getStatus = async (trip_id, jwt) => {
+
+    const url = URL_VIAJES + '/trips/' + trip_id;
+
+    const bearer = 'Bearer '+jwt;
+
+    try {
+        const response = await fetch(url,
+            {
+                method:'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': bearer,
+                    'Content-Type': 'application/json',
+                  },
+            });
+        const json = await response.json();
+        return json.trip_state;
+    } catch (err) {
+        console.error(err);
+        alert("error", err.message)
+    }
+}
+
+const getDriverLocation = async (trip_id, jwt) => {
+
+    const url = URL_VIAJES + '/trips/' + trip_id;
+
+    const bearer = 'Bearer '+jwt;
+
+    try {
+        const response = await fetch(url,
+            {
+                method:'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': bearer,
+                    'Content-Type': 'application/json',
+                  },
+            });
+        const json = await response.json();
+        const driver_locations = {
+            latitude: json.driver_latitude,
+            longitude: json.driver_longitude
+        }
+        return driver_locations;
+    } catch (err) {
+        console.error(err);
+        alert("error", err.message)
+    }
+}
+
+export {createDefaultDestination, getDefaultDestination, createCustomDestination, getFavoriteDestinations, deleteCustomDestination, estimateFee, createTrip, getTrip, getStatus, getDriverLocation}

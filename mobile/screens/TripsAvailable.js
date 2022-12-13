@@ -2,7 +2,7 @@ import { StyleSheet, View, FlatList, ScrollView} from 'react-native';
 import {Button, Text, TouchableRipple, Modal} from 'react-native-paper';
 import { Entypo } from '@expo/vector-icons';
 import React, {useContext, useEffect, useState} from 'react';
-import { getFavoriteDestinations, deleteCustomDestination } from '../services/trips';
+import { getFavoriteDestinations } from '../services/trips';
 import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
 import { estimateFee } from '../services/trips';
