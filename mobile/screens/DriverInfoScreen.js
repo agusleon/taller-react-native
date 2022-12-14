@@ -21,7 +21,7 @@ const DriverInfoScreen = ({navigation}) => {
 
       try {
         const response =  await getUserInfo(driver.id,user.jwt)
-        console.log("get info ",response)
+        //console.log("get info ",response)
         if (response.avg_driver_rating != null) {
           setRating(response.avg_driver_rating.toFixed(1))
         }
@@ -78,7 +78,7 @@ const DriverInfoScreen = ({navigation}) => {
 
           <View style={styles.carDetails}>
             <Ionicons name="car" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{driver.car_model} - {driver.car_patent}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{driver.car_model} - {driver.car_plate}</Text>
           </View>
 
           <View style={styles.infoBoxWrapper}>

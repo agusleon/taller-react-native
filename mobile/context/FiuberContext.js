@@ -12,7 +12,7 @@ const ContextProvider = ({children}) => {
         password:'',
         jwt:'',
         car_model: '',
-        car_patent: ''
+        car_plate: ''
     }
 
     const address_state = {

@@ -54,7 +54,7 @@ export default function RegisterScreen() {
     const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
 
     async function getSuggestionsList(q){
-        console.log("entro aca")
+ 
         const filterToken = q.toLowerCase()
         console.log('getSuggestions', q)
         try {
@@ -64,12 +64,12 @@ export default function RegisterScreen() {
             
             const suggestions = response.map(r => ({
                 id: uuid(), 
-                title: `${r.make} ${r.model} ${r.year}`
+                title: `${r.make} ${r.model}`
             }))
             
             setSuggestionsList(suggestions)
-            console.log("suggestions ", [...new Set(suggestions)])
-            console.log("la list", suggestionsList)
+            
+         
         } catch (err) {
             alert(err.message)
             console.log("Could not retrieve car model suggestions")
@@ -135,7 +135,7 @@ export default function RegisterScreen() {
                     password: password,
                     jwt: idTokenResult.token,
                     car_model: user_response.car_description,
-                    car_patent: user_response.plate
+                    car_plate: user_response.plate
                 }
 
                 setUser(user)

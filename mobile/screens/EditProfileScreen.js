@@ -25,7 +25,7 @@ const EditProfileScreen = ({navigation}) => {
     const [nameEdit, setNameEdit] = React.useState(user.name);
     const [roleEdit, setRoleEdit] = React.useState(role);
     const [modelEdit, setModelEdit] = React.useState(user.car_model);
-    const [patentEdit, setPatentEdit] = React.useState(user.car_patent);
+    const [patentEdit, setPatentEdit] = React.useState(user.car_plate);
     const [suggestionsList, setSuggestionsList] = useState(null)
     const [selectedModel, setSelectedModel] = useState(null)
 
@@ -39,7 +39,7 @@ const EditProfileScreen = ({navigation}) => {
         setRoleEdit(role)
 
         setModelEdit(user.car_model)
-        setPatentEdit(user.car_patent)
+        setPatentEdit(user.car_plate)
         setEditable(false)
     }
 
@@ -56,11 +56,15 @@ const EditProfileScreen = ({navigation}) => {
       
       const suggestions = response.map(r => ({
           id: uuid(), 
-          title: `${r.make} ${r.model} ${r.year}`
-      }))
+          title: `${r.make} ${r.model}`
+          
+      }
+      )
+      )
+      console.log("title ", suggestions.title)
     
       setSuggestionsList(suggestions)
-      console.log("suggestions ", [...new Set(suggestions)])
+     
       console.log("la list", suggestionsList)
     }
 
@@ -81,11 +85,12 @@ const EditProfileScreen = ({navigation}) => {
                 await updateUserInfo(user.uid, user.jwt, nameEdit,  roleEdit)
                 const user_response = await getUser(user.uid, user.jwt);
                 console.log("User response GET", user_response)
+                console.log("User user", user)
                  
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email,
+                  email: user.email,
                   wallet: user_response.wallet,
                   password: user.password,
                   jwt: user.jwt,
@@ -106,12 +111,12 @@ const EditProfileScreen = ({navigation}) => {
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email,
+                  email: user.email,
                   wallet: user_response.wallet,
                   password: user.password,
                   jwt: user.jwt,
                   car_model: user_response.car_description,
-                  car_patent: user_response.plate
+                  car_plate: user_response.plate
                 }
                 setUser(updateUser)
               }
@@ -167,7 +172,7 @@ const EditProfileScreen = ({navigation}) => {
                                     onOpenSuggestionsList={onOpenSuggestionsList}
                                     //  onSubmit={(e) => onSubmitSearch(e.nativeEvent.text)}
                                     textInputProps={
-                                        {placeholder: 'Type 3+ letters car model'}
+                                        {placeholder: 'Type 3+ letters of car model'}
                                         
                                        
                                     }
@@ -198,7 +203,7 @@ const EditProfileScreen = ({navigation}) => {
                       </View>
                       <View  style={styles.passwordStyle}>
                         <MaterialCommunityIcons name="smart-card" size={20} color="grey" />
-                        <Text style={{color: 'grey', marginLeft: 5}}>{user.car_patent}</Text>
+                        <Text style={{color: 'grey', marginLeft: 5}}>{user.car_plate}</Text>
                       </View>
                     </View>
                 :

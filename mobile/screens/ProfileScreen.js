@@ -19,13 +19,13 @@ const ProfileScreen = ({navigation}) => {
     const {user, role} = useContext(FiuberContext);
     const [rating, setRating] = useState(false);
     const [tripcount, setTripCount] = useState(0);
-
+   console.log("EL PATENT ", user.car_plate)
     const fetchInfo = async () => {  
 
       try {
         const response =  await getUserInfo(user.uid,user.jwt)
         const response_tripcount = await getTripCount(user.uid, user.jwt, role)
-        console.log("get info ",response)
+        //console.log("get info ",response)
         console.log(response_tripcount)
         setTripCount(response_tripcount)
         if (role == 'passenger'){
@@ -83,7 +83,7 @@ const ProfileScreen = ({navigation}) => {
           {(role == 'driver') &&
             <View style={styles.row}>
               <Ionicons name="car-outline" color="#777777" size={20}/>
-              { <Text style={{color:"#777777", marginLeft: 20}}>{user.car_model} - {user.car_patent}</Text> }
+              { <Text style={{color:"#777777", marginLeft: 20}}>{user.car_model} - {user.car_plate}</Text> }
             </View>
           }
         </View>

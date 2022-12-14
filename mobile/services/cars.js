@@ -1,6 +1,6 @@
 
 const getSuggestions = async (q) => {
-    const url = 'https://api.api-ninjas.com/v1/cars?limit=10&model='+q;
+    const url = 'https://api.api-ninjas.com/v1/cars?limit=1&model='+q;
     console.log(url)
     const response = await fetch(url,
         {
@@ -11,7 +11,7 @@ const getSuggestions = async (q) => {
               },
         });
     const json = await response.json();
-    console.log("jsonnn ", json)
+    console.log("Cars suggestions ", json)
     return json;
     
 

@@ -107,8 +107,7 @@ export default function LoginScreen({navigation}) {
                 }
                 setUser(current_user)
             }
-            
-
+           
             setRole(user_response.roles[0])
 
             setLoggedIn(true)
