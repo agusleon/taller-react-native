@@ -43,7 +43,7 @@ const ProfileScreen = ({navigation}) => {
           console.log("Couldn't get metrics", err.message)}     
 
   }
-  
+
     useEffect(() => {
         fetchInfo();
     }, [user, role]);
