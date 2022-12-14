@@ -14,7 +14,7 @@ import {getUserInfo} from '../services/metrics';
 
 const PassengerInfoScreen= ({navigation}) => {
   
-  const {user, passenger, hasPassenger, setHasPassenger,userReviewed} = useContext(FiuberContext);
+  const {user, passenger, userReviewed, setPassenger} = useContext(FiuberContext);
   const [rating, setRating] = useState(''); 
   const [comments, setComments] = useState([]);
 
@@ -23,20 +23,24 @@ const PassengerInfoScreen= ({navigation}) => {
       try{
         const response =  await getUserInfo(passenger.id, user.jwt)
         console.log("get info ",response)
-        setRating(response.avg_passenger_rating.toFixed(1))
+        if (response.avg_passenger_rating != null) {
+          setRating(response.avg_passenger_rating.toFixed(1))
+        }
         setComments(comments.concat(response.passenger_ratings.map((r) =>  r.text)))
         console.log("los comments ",response.passenger_ratings.map((r) =>  r.text))
 
       }catch (err) {console.log("Error en review al passenger", err.message)}     
 
   }
+
+  const handleFinish = () => {
+    setPassenger(false)
+    navigation.navigate('Home')
+  }
       
   useEffect(()=>{
     getPassengerInfo()
-  },[])
-
-  //BORRAR LUEGO ES SOLO PARA PROBAR QUE FUNCIONA
-  setHasPassenger(true)
+  },[userReviewed])
 
   const renderItem=({item})=>{
     return (
@@ -59,18 +63,9 @@ const PassengerInfoScreen= ({navigation}) => {
   }
 
   return (
-    (hasPassenger == false) ?
-      <View style={{marginLeft: 20}}>
-        <Title style={[styles.title, {
-            marginTop:40,
-            marginBottom: 15,
-          }]}>You do not have a passenger!
-        </Title>
-      </View>
-    :
     <SafeAreaView style={styles.container}>
       <View style={styles.userInfoSection}>
-        <View style={{flexDirection: 'row', alignItems:'center', marginTop: 10}}>
+        <View style={{flexDirection: 'row', alignItems:'center', marginTop: 10, height:150}}>
           <Avatar.Image
             size={100}
             source={{uri:'https://avatars.dicebear.com/api/big-smile/'+passenger.id+'.png'}}
@@ -79,18 +74,18 @@ const PassengerInfoScreen= ({navigation}) => {
             <Title style={[styles.title, {
                 marginTop:15,
                 marginBottom: 15,
-              }]}>{passenger.name}
+              }]}>
+                {passenger.name}
             </Title>
             <View style={styles.row}>
               <Ionicons name="ios-body" color="#777777" size={20}/>
               <Text style={{color:"#777777", marginLeft: 20}}>Passenger</Text>
-          </View>
+            </View>
           </View>
         </View>
-        <View >
-          
+         
       </View>
-
+      <View>  
 
       <View style={styles.infoBoxWrapper}>
         
@@ -103,15 +98,15 @@ const PassengerInfoScreen= ({navigation}) => {
                 <Caption>Rating</Caption>
           </View>
               
-            {!(userReviewed)?
+            {!(userReviewed) ?
               <View style={styles.rate}>
-              <Button
-                title="Review"
-                onPress={() => {navigation.navigate('Review Passenger')}}
-                color="#BF0AFF"
-                accessibilityLabel="Review"
-              />
-            </View>
+                <Button
+                  title="Review"
+                  onPress={() => {navigation.navigate('Review Passenger')}}
+                  color="#BF0AFF"
+                  accessibilityLabel="Review"
+                />
+              </View>
             :
               <></>
             } 
@@ -125,6 +120,7 @@ const PassengerInfoScreen= ({navigation}) => {
             ListEmptyComponent={ListEmptyComponent}
             vertical={false}
             />
+            <Button onPress={handleFinish}>FINISH</Button>
       </View>
           
   
@@ -140,14 +136,15 @@ export default PassengerInfoScreen;
   const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center'
     },
     userInfoSection: {
       paddingHorizontal: 30,
       marginBottom: 20,
-      marginTop: 150
+      marginTop: 150,
+      backgroundColor: 'white'
     },
     title: {
       fontSize: 24,
@@ -177,7 +174,8 @@ export default PassengerInfoScreen;
       borderTopWidth: 1,
       flexDirection: 'row',
       height: 100,
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
+      justifyContent:'center'
     },
     infoBox: {
       width: '30%',
@@ -206,8 +204,6 @@ export default PassengerInfoScreen;
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'column',
-      
-      
     },
     listContainer: {
       marginTop: 10,

@@ -103,7 +103,7 @@ export default function LoginScreen({navigation}) {
                     email,
                     jwt: idTokenResult.token,
                     car_plate: user_response.plate,
-                    car_model: user_response.car_description.title
+                    car_model: user_response.car_description
                 }
                 setUser(current_user)
             }

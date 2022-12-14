@@ -14,8 +14,7 @@ const createTransaction = async (fee, trip_id, driver_id, jwt) => {
 
     console.log(body)
 
-    try {
-        const response = await fetch(url,
+    const response = await fetch(url,
         {
             method:'POST',
             body:body,
@@ -25,13 +24,9 @@ const createTransaction = async (fee, trip_id, driver_id, jwt) => {
                 'Content-Type': 'application/json',
               },
         });
-        console.log(JSON.stringify(response));
-        const json = await response.json();
-        return json;
-    } catch (err) {
-      console.error(err);
-      alert("error",err.message);
-    }
+    console.log(JSON.stringify(response));
+    const json = await response.json();
+    return json;
 
 }
 
@@ -45,8 +40,7 @@ const makeDeposit = async (trip_id, jwt) => {
         trip_id,
     })
 
-    try {
-        const response = await fetch(url,
+    const response = await fetch(url,
         {
             method:'POST',
             body:body,
@@ -56,11 +50,7 @@ const makeDeposit = async (trip_id, jwt) => {
                 'Content-Type': 'application/json',
               },
         });
-        return response;
-    } catch (err) {
-      console.error(err);
-      alert("error",err.message);
-    }
+    return await response.json();
 
 }
 
@@ -74,8 +64,8 @@ const makeWithdrawal = async (trip_id, jwt) => {
         trip_id,
     })
 
-    try {
-        const response = await fetch(url,
+    console.log(body)
+    const response = await fetch(url,
         {
             method:'POST',
             body:body,
@@ -85,12 +75,7 @@ const makeWithdrawal = async (trip_id, jwt) => {
                 'Content-Type': 'application/json',
               },
         });
-        return response;
-    } catch (err) {
-      console.error(err);
-      alert("error",err.message);
-    }
-
+    return await response.json();
 }
 
 const createWallet = async (jwt, user_id) => {
@@ -128,8 +113,7 @@ const putPayment = async (jwt, trip_id, amount, paid, collected) => {
 
     console.log("sending this body: ", body )
 
-    try {
-        const response = await fetch(url,
+    const response = await fetch(url,
         {
             method:'PUT',
             body:body,
@@ -139,15 +123,8 @@ const putPayment = async (jwt, trip_id, amount, paid, collected) => {
                 'Content-Type': 'application/json',
               },
         });
-        console.log(response)
-        return response;
-
-    } catch (err) {
-
-      console.error(err);
-      alert("error",err.message);
-
-    }
+    console.log(response)
+    return response.json();
 }
 
 

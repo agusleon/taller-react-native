@@ -10,7 +10,7 @@ import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
 
 const RateUserScreen = ({navigation}) => {
-  const {driver, user, role, setUserReviewed, userReviewed} = useContext(FiuberContext);
+  const {driver, passenger, role, setUserReviewed, userReviewed} = useContext(FiuberContext);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   
@@ -28,7 +28,7 @@ const RateUserScreen = ({navigation}) => {
              console.log("idtoken ",driver.id)
              try {
               //cambiar a driver.id
-               await rateDriver(user.uid, idTokenResult.token, rating, comment);
+               await rateDriver(driver.id, idTokenResult.token, rating, comment);
                setUserReviewed(true);
                Alert.alert("successfully submitted!")
                navigation.navigate('Driver Info')
@@ -37,10 +37,10 @@ const RateUserScreen = ({navigation}) => {
             //llamo a la api para mandarle el rating 
             const idTokenResult = await auth.currentUser.getIdTokenResult();
             try {
-              await ratePassenger(user.uid, idTokenResult.token, rating, comment);
+              await ratePassenger(passenger.id, idTokenResult.token, rating, comment);
               setUserReviewed(true);
               Alert.alert("successfully submitted!")
-              navigation.navigate('Passenger Info')
+              navigation.navigate('Passenger Info Screen')
             } catch (err) {console.log("Error en review al passenger", err)}     
        }
    
@@ -92,14 +92,14 @@ const RateUserScreen = ({navigation}) => {
           <Button
                     
           title="Back"
-          onPress={() => navigation.navigate('Driver Info')}
+          onPress={() => navigation.navigate('Driver Info Screen')}
           color="#BF0AFF"
           accessibilityLabel="Learn more about this purple button"
           />:
           <Button
                     
           title="Back"
-          onPress={() => navigation.navigate('Passenger Info')}
+          onPress={() => navigation.navigate('Passenger Info Screen')}
           color="#BF0AFF"
           accessibilityLabel="Learn more about this purple button"
           />}
@@ -117,14 +117,14 @@ const RateUserScreen = ({navigation}) => {
                   <Button
                             
                   title="Back"
-                  onPress={() => navigation.navigate('Driver Info')}
+                  onPress={() => navigation.navigate('Driver Info Screen')}
                   color="#BF0AFF"
                   accessibilityLabel="Learn more about this purple button"
                   />:
                   <Button
                             
                   title="Back"
-                  onPress={() => navigation.navigate('Passenger Info')}
+                  onPress={() => navigation.navigate('Passenger Info Screen')}
                   color="#BF0AFF"
                   accessibilityLabel="Learn more about this purple button"
         />}

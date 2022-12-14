@@ -13,7 +13,7 @@ import {getUserInfo} from '../services/metrics';
 
 const DriverInfoScreen = ({navigation}) => {
   
-  const {user, driver, gotDriver, userReviewed} = useContext(FiuberContext);
+  const {user, driver, userReviewed, setDriver} = useContext(FiuberContext);
   const [rating, setRating] = useState(''); 
   const [comments, setComments] = useState([]);
 
@@ -22,17 +22,24 @@ const DriverInfoScreen = ({navigation}) => {
       try {
         const response =  await getUserInfo(driver.id,user.jwt)
         console.log("get info ",response)
-        setRating(response.avg_driver_rating.toFixed(1))
+        if (response.avg_driver_rating != null) {
+          setRating(response.avg_driver_rating.toFixed(1))
+        }
         setComments(comments.concat(response.driver_ratings.map((r) =>  r.text)))
         console.log("los comments ",response.driver_ratings.map((r) =>  r.text))
 
       } catch (err) {console.log("Error en review al driver", err)}     
 
   }
+
+  const handleFinish = () => {
+    setDriver(false)
+    navigation.navigate('Home')
+  }
   
   useEffect(()=>{
     getDriverInfo()
-},[])
+},[userReviewed])
 
   const renderItem=({item})=>{
     return (
@@ -53,16 +60,6 @@ const DriverInfoScreen = ({navigation}) => {
   }
 
   return (
-    (!gotDriver) ?
-      <View style={{
-        marginLeft: 20,
-        }}>
-        <Title style={[styles.title, {
-            marginTop:40,
-            marginBottom: 15,
-          }]}>You do not have a driver!
-        </Title>
-      </View>:
       <SafeAreaView style={styles.container}>
         <View style={styles.userInfoSection}>
           <View style={{flexDirection: 'row', alignItems:'center', marginTop: 10}}>
@@ -113,6 +110,7 @@ const DriverInfoScreen = ({navigation}) => {
               vertical={false}
               />
           </View>
+          <Button onPress={handleFinish}>FINISH</Button>
         </View>
       </SafeAreaView>
    
@@ -125,14 +123,13 @@ export default DriverInfoScreen;
   
   const styles = StyleSheet.create({
     container: {
-       
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center'
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     list_big_container: {
-      backgroundColor: 'white',
+      backgroundColor: 'green',
       alignItems: 'center',
       justifyContent: 'center'
     },
@@ -140,12 +137,12 @@ export default DriverInfoScreen;
       paddingHorizontal: 30,
       marginBottom: 20,
       marginTop: 150,
-      
+      backgroundColor: 'red'
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
-      backgroundColor: 'white'
+      backgroundColor: 'green'
     },
     text: {
       fontSize: 20,
@@ -172,7 +169,8 @@ export default DriverInfoScreen;
       borderTopWidth: 1,
       flexDirection: 'row',
       height: 100,
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
+      justifyContent: 'center'
     },
     infoBox: {
       width: '30%',
@@ -209,7 +207,7 @@ export default DriverInfoScreen;
       margin:1,
       height:'100%',
       width:350,
-      backgroundColor:'white',
+      backgroundColor:'red',
       justifyContent:'flex-start',
       alignItems:'flex-start'
   },

@@ -80,7 +80,6 @@ const getUserInfo = async (uid, jwt) => {
     });
 
     const json = await response.json();
-    console.log("response del get info ", json)
     return json;
 
 };
@@ -105,8 +104,9 @@ const getTripCount = async (uid, jwt, role) => {
             'Content-Type': 'application/json',
           },
     });
-
-  return response;
+  const json = await response.json();
+  console.log("response del get info ", json)
+  return json;
 
 }
 

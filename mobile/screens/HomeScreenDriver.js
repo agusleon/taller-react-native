@@ -10,7 +10,8 @@ import * as Location from 'expo-location';
 import { getDistanceBetweenTwoPoints } from '../utils/methods';
 import { 
     ON_GOING,
-    TRIP_FINISHED } from '../utils/vars';
+    TRIP_FINISHED,
+    BEGIN } from '../utils/vars';
 import { makeWithdrawal, putPayment } from '../services/payments'
 
 const {width, height} = Dimensions.get("window");
@@ -35,6 +36,7 @@ export default function HomeScreenDriver ({navigation}) {
         setFocusLocation,
         setShowDirections,
         setStatus,
+        setDestination
     } = useContext(FiuberContext);
 
     useEffect(() => {
@@ -46,7 +48,18 @@ export default function HomeScreenDriver ({navigation}) {
     const handleTripButton = () => {
 
         navigation.navigate('Trips Available')
+        
+    }
 
+    const handleWithdrawal = async () => {
+        console.log(passenger.trip_id.toUpperCase())
+        try {
+            const response_withdrawal = await makeWithdrawal(passenger.trip_id.toUpperCase(), user.jwt)
+            console.log(JSON.stringify(response_withdrawal))
+        } catch (error) {
+            console.log(error.message)
+        }
+        
     }
     
 
@@ -89,10 +102,10 @@ export default function HomeScreenDriver ({navigation}) {
                 const response = await getTrip(passenger.trip_id, user.jwt);
                 console.log(response)
                 if (!response.detail) {
-                    if ((response.paid == response.amount) && (response.collected == 0)) {
+                    if ((response.paid == 1) && (response.collected == 0)) {
                         setAwaitingPayment(false)
-                        const response_withdrawal = await makeWithdrawal(passenger.trip_id, user.jwt);
-                        const response_payment = await putPayment(user.jwt, response.trip_id, response.amount, response.amount, response.amount)
+                        const response_withdrawal = await makeWithdrawal(passenger.trip_id.toUpperCase(), user.jwt);
+                        const response_payment = await putPayment(user.jwt, response.trip_id, response.amount, 1, 1)
                         console.log(JSON.stringify(response_withdrawal))
                         console.log(JSON.stringify(response_payment))
                         setAwaitingCollection(false)
@@ -104,6 +117,14 @@ export default function HomeScreenDriver ({navigation}) {
             }
 
         }, 5000)
+    }
+
+    const handleReviewPassenger = () => {
+        
+        navigation.navigate('Passenger Info Screen')
+        setDestination(false)
+        setStatus(BEGIN)
+        setShowDirections(false)
     }
 
     const handleGoingButton = async () => {
@@ -224,7 +245,7 @@ export default function HomeScreenDriver ({navigation}) {
                     <View style={styles.small_container}>
                         <AntDesign name="checkcircleo" size={24} color="green" />
                         <Text style={styles.text}>Payment collected!</Text>
-                        <Button style={styles.button} mode="outlined" onPress={() => navigation.navigate('Passenger Info Screen')}>
+                        <Button style={styles.button} mode="outlined" onPress={handleReviewPassenger}>
                             Review Passenger
                         </Button>
                     </View>
@@ -250,6 +271,8 @@ export default function HomeScreenDriver ({navigation}) {
             <Map gotDriver={gotDriver}/>
             
             <TopBar {...navigation} />
+
+            <Button onPress={handleWithdrawal}>Make withdrawal</Button>
 
             <View style={styles.card}>
 

@@ -26,10 +26,17 @@ const ProfileScreen = ({navigation}) => {
         const response =  await getUserInfo(user.uid,user.jwt)
         const response_tripcount = await getTripCount(user.uid, user.jwt, role)
         console.log("get info ",response)
-        console.log("get info ",response_tripcount)
+        console.log(response_tripcount)
         setTripCount(response_tripcount)
-        setRating(response.avg_driver_rating.toFixed(1))
-        console.log("los comments ",response.driver_ratings.map((r) =>  r.text))
+        if (role == 'passenger'){
+          if (response.avg_passenger_rating != null) {
+            setRating(response.avg_passenger_rating.toFixed(1))
+          }
+        } else {
+          if (response.avg_driver_rating != null) {
+            setRating(response.avg_driver_rating.toFixed(1))
+          }
+        }
 
       } catch (err) {
           alert("Couldn't get user metrics: ",err.message)
@@ -39,7 +46,7 @@ const ProfileScreen = ({navigation}) => {
   
     useEffect(() => {
         fetchInfo();
-    }, []);
+    }, [user, role]);
     
     return (
       <SafeAreaView style={styles.container}>

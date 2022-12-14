@@ -106,7 +106,7 @@ export default function HomeScreen ({navigation}) {
                     
                     const driver_state = {
                         id: response_driver.uid,
-                        car_model: response_driver.car_description.title,
+                        car_model: response_driver.car_description,
                         car_plate: response_driver.plate,
                         name: response_driver.name,
                         trip_id,
@@ -216,8 +216,11 @@ export default function HomeScreen ({navigation}) {
         
         navigation.navigate('Driver Info Screen')
         setDestination(false)
+        setFocusLocation({...currentLocation})
         setStatus(BEGIN)
-
+        setGotDriver(false)
+        setShowDirections(false)
+        setOnGoing(false)
     }
 
     const handleFavoriteButton = () => {
@@ -232,7 +235,7 @@ export default function HomeScreen ({navigation}) {
 
             await makeDeposit(driver.trip_id, user.jwt);
 
-            const response_payment = await putPayment(user.jwt, driver.trip_id, fee, fee, 0)
+            const response_payment = await putPayment(user.jwt, driver.trip_id, fee, 1, 0)
             console.log(response_payment)
             
             setPaymentMade(true)

@@ -21,7 +21,7 @@ const EditProfileScreen = ({navigation}) => {
         {label: 'Driver', value: 'driver'}
     ]);
     const [editable,setEditable] = useState(false);
-    const {user, setUser, role, setRole} = useContext(FiuberContext);
+    const {user, setUser, role, setRole, email} = useContext(FiuberContext);
     const [nameEdit, setNameEdit] = React.useState(user.name);
     const [roleEdit, setRoleEdit] = React.useState(role);
     const [modelEdit, setModelEdit] = React.useState(user.car_model);
@@ -85,7 +85,7 @@ const EditProfileScreen = ({navigation}) => {
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email: user_response.email,
+                  email,
                   wallet: user_response.wallet,
                   password: user.password,
                   jwt: user.jwt,
@@ -106,7 +106,7 @@ const EditProfileScreen = ({navigation}) => {
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email: user_response.email,
+                  email,
                   wallet: user_response.wallet,
                   password: user.password,
                   jwt: user.jwt,

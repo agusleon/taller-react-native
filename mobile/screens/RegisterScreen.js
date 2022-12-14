@@ -109,6 +109,7 @@ export default function RegisterScreen() {
                 longitudeDelta:  LONGITUDE_DELTA,
                 latitudeDelta:  LATITUDE_DELTA
             }
+            console.log(address)
             
             // se crea el usuario en firestore
             if(role == 'passenger'){
@@ -126,14 +127,14 @@ export default function RegisterScreen() {
                 
             }else{
 
-                const user_response = await createDriver(username, role, user_uid, idTokenResult.token, selectedItem, patent);
+                const user_response = await createDriver(username, role, user_uid, idTokenResult.token, selectedItem.title, patent);
                 const user = {
                     uid: user_response.uid,
                     name: user_response.name,
                     email,
                     password: password,
                     jwt: idTokenResult.token,
-                    car_model: user_response.car_description.title,
+                    car_model: user_response.car_description,
                     car_patent: user_response.plate
                 }
 
