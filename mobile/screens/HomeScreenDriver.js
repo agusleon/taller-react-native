@@ -87,9 +87,9 @@ export default function HomeScreenDriver ({navigation}) {
         let interval = setInterval(async () => {
             try {
                 const response = await getTrip(passenger.trip_id, user.jwt);
-                console.log(JSON.stringify(response))
+                console.log(response)
                 if (!response.detail) {
-                    if (response.paid && (response.paid == response.amount) && (response.collected == 0)) {
+                    if ((response.paid == response.amount) && (response.collected == 0)) {
                         setAwaitingPayment(false)
                         const response_withdrawal = await makeWithdrawal(passenger.trip_id, user.jwt);
                         const response_payment = await putPayment(user.jwt, response.trip_id, response.amount, response.amount, response.amount)
@@ -169,7 +169,7 @@ export default function HomeScreenDriver ({navigation}) {
                     source={{uri:'https://avatars.dicebear.com/api/big-smile/'+passenger.id+'.png'}}
                     />
                     <View>
-                        <Text style={styles.small_text}>Heading to {destination.address} with passenger</Text>
+                        <Text style={styles.small_text}>Heading to destination with passenger</Text>
                         <Text style={styles.text}>{passenger.name}</Text>
                     </View>
                 </View>
@@ -189,8 +189,7 @@ export default function HomeScreenDriver ({navigation}) {
                 source={{uri:'https://avatars.dicebear.com/api/big-smile/'+passenger.id+'.png'}}
                 />
                 <View>
-                    <Text style={styles.text}>Picking up {passenger.name}</Text>
-                    <Text style={styles.text}>{passenger.source_address}</Text>
+                    <Text style={styles.text}>Picking up {passenger.name} at origin</Text>
                 </View>
             </View>
             <Button style={styles.button} mode="contained" onPress={handleGoingButton}>
@@ -225,8 +224,8 @@ export default function HomeScreenDriver ({navigation}) {
                     <View style={styles.small_container}>
                         <AntDesign name="checkcircleo" size={24} color="green" />
                         <Text style={styles.text}>Payment collected!</Text>
-                        <Button style={styles.button} mode="outlined" onPress={() => {}}>
-                            View details
+                        <Button style={styles.button} mode="outlined" onPress={() => navigation.navigate('Passenger Info Screen')}>
+                            Review Passenger
                         </Button>
                     </View>
                 }

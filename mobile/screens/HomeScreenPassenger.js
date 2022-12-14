@@ -106,8 +106,8 @@ export default function HomeScreen ({navigation}) {
                     
                     const driver_state = {
                         id: response_driver.uid,
-                        car_model: response_driver.car_model,
-                        car_plate: response_driver.car_plate,
+                        car_model: response_driver.car_description.title,
+                        car_plate: response_driver.plate,
                         name: response_driver.name,
                         trip_id,
                     }
@@ -133,6 +133,7 @@ export default function HomeScreen ({navigation}) {
                     
 
                 }
+
             } catch (err) {
                 alert(err.message)
                 handleCancelButton()
@@ -194,7 +195,7 @@ export default function HomeScreen ({navigation}) {
 
                 setCurrentLocation({...focusLocation})
                 setShowDirections(false)
-                setGotDriver(false)
+                // setGotDriver(false)
                 setOnGoing(false)
                 clearInterval(interval)
 
@@ -213,6 +214,7 @@ export default function HomeScreen ({navigation}) {
 
     const handleReviewDriver = () => {
         
+        navigation.navigate('Driver Info Screen')
         setDestination(false)
         setStatus(BEGIN)
 
@@ -317,7 +319,7 @@ export default function HomeScreen ({navigation}) {
                         <Text style={styles.car_text}>{driver.car_model} - {driver.car_plate}</Text>
                     </View>
                 </View>
-                <Text style={styles.text}>Heading to {destination.description}</Text>
+                <Text style={styles.text}>Heading to destination</Text>
             </View>
         );
     }

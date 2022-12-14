@@ -4,7 +4,7 @@ import MapView from 'react-native-maps';
 import { Marker } from 'react-native-maps';
 import { FiuberContext } from '../context/FiuberContext';
 import MapViewDirections from 'react-native-maps-directions';
-import { ON_GOING } from '../utils/vars';
+import { ON_GOING, TRIP_FINISHED } from '../utils/vars';
 
 const Map = () => {
     const GOOGLE_API_KEY = 'AIzaSyCkRY5LLU7MR3J1XGHzJG9CXrvEypQpdJM'
@@ -40,7 +40,7 @@ const Map = () => {
             }
 
             {/* onTrip y status AWAITING_DRIVER muestro el marker con un autito */}
-            {gotDriver && 
+            {(gotDriver && status != TRIP_FINISHED)  && 
                 <Marker 
                     coordinate={{latitude: driverLocation.latitude, longitude: driverLocation.longitude}}
                     icon={{uri:'https://avatars.dicebear.com/api/big-smile/'+driver.id+'.png?size=100'}}       

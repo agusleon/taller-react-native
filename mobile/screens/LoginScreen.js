@@ -20,6 +20,7 @@ export default function LoginScreen({navigation}) {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [keyboardOpen, setKeyboardOpen] = useState(false);
+    const [existingUser, setExistingUser] = useState(true);
 
     const {setLoggedIn, setRole, role, setCurrentLocation, setUser, currentLocation, setFavoriteDestinations, user, setFocusLocation} = useContext(FiuberContext);
 
@@ -83,17 +84,30 @@ export default function LoginScreen({navigation}) {
             setFocusLocation(address)
             console.log(currentLocation)
             
+            if (user_response.roles[0] == 'passenger') {
 
-            // se guarda el usuario actual en el context y su rol
-            const current_user = {
-                uid: user_response.uid,
-                name: user_response.name,
-                password: password,
-                email: user_response.email,
-                wallet: user_response.wallet,
-                jwt: idTokenResult.token,
+                // se guarda el usuario actual en el context y su rol
+                const current_user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    password: password,
+                    email,
+                    jwt: idTokenResult.token,
+                }
+                setUser(current_user)
+            } else {
+                const current_user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    password: password,
+                    email,
+                    jwt: idTokenResult.token,
+                    car_plate: user_response.plate,
+                    car_model: user_response.car_description.title
+                }
+                setUser(current_user)
             }
-            setUser(current_user)
+            
 
             setRole(user_response.roles[0])
 
@@ -108,28 +122,36 @@ export default function LoginScreen({navigation}) {
         }
     };
 
+    const handleRegister = () => {
+        setExistingUser(false)
+        navigation.navigate('Onboarding');
+    }
+
     useEffect(() => {
         async function fetchaData() {
-            if(role == "passenger"){
-                try {
-                    const fetched_destinations = await getFavoriteDestinations(user.jwt);
-                    if (!fetched_destinations.detail && fetched_destinations.length > 0){
-                        console.log("Destinations customs:",fetched_destinations);
-                        setFavoriteDestinations(fetched_destinations);
+            if (existingUser) {
+
+                if(role == "passenger"){
+                    try {
+                        const fetched_destinations = await getFavoriteDestinations(user.jwt);
+                        if (!fetched_destinations.detail && fetched_destinations.length > 0){
+                            console.log("Destinations customs:",fetched_destinations);
+                            setFavoriteDestinations(fetched_destinations);
+                        }
+                    } catch (err) {
+                        console.log("Could not retrieve favorite destinations: ", err.message)
                     }
-                } catch (err) {
-                    console.log("Could not retrieve favorite destinations: ", err.message)
-                }
                 
-            } else if (role == "driver") {
-                try {
-                    console.log("Updating position from login screen")
-                    const response = await updateDriverPosition(currentLocation, user.jwt)
-                    if (!response.latitude) {
-                        console.log("Could not update position");
+                } else if (role == "driver") {
+                    try {
+                        console.log("Updating position from login screen")
+                        const response = await updateDriverPosition(currentLocation, user.jwt)
+                        if (!response.latitude) {
+                            console.log("Could not update position");
+                        }
+                    } catch (err) {
+                        console.log("Could not update position: ", err.message)
                     }
-                } catch (err) {
-                    console.log("Could not update position: ", err.message)
                 }
             }
         
@@ -184,7 +206,7 @@ export default function LoginScreen({navigation}) {
                     Login
                 </Button>
 
-                <Button mode="outlined" style={styles.button} onPress={() => navigation.navigate('Onboarding')}>
+                <Button mode="outlined" style={styles.button} onPress={handleRegister}>
                     Register here
                 </Button>
 

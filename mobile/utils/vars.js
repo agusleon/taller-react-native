@@ -10,3 +10,4 @@ export const ON_GOING=3
 export const TRIP_FINISHED=4
 export const TRIP_INFO=5
 export const CREATING_TRIP=6
+

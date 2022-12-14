@@ -115,8 +115,7 @@ const getFavoriteDestinations = async (jwt) => {
     const url = URL_VIAJES + '/destinations/name/';
     const bearer = 'Bearer '+jwt;
 
-    try {
-        const response = await fetch(url,
+    const response = await fetch(url,
         {
             method:'GET',
             headers: {
@@ -126,16 +125,11 @@ const getFavoriteDestinations = async (jwt) => {
               },
         });
 
-        const json = await response.json();
-        if (json.detail){
-            return '';
-        }
-        return json;
-    } catch (err) {
-      console.error(err);
-      alert("error",err.message);
+    const json = await response.json();
+    if (json.detail){
+        return [];
     }
-
+    return json;
 };
 
 const getTrips = async (jwt) => {

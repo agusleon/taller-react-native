@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList, ScrollView} from 'react-native';
+import { StyleSheet, View, FlatList} from 'react-native';
 import {Button, Text} from 'react-native-paper';
 import React, {useContext, useEffect, useState} from 'react';
 import { FiuberContext } from '../context/FiuberContext';
@@ -103,10 +103,12 @@ const TripsAvailableScreen = ({navigation}) => {
           <View style={styles.destination_container}>
 
             <View style={styles.title_container}>
-              <Text style={styles.title}>{item.destination_address}</Text>
-              <Text style={styles.title}>{item.source_address}</Text>
-              <Text style={styles.title}>Distance: {item.distance}</Text>
-              <Text style={styles.title}>Estimated fee: {item.amount}</Text>
+              <Text style={styles.title}>To:</Text>
+              <Text>{item.destination_address}</Text>
+            </View>
+            <View>
+              <Text style={styles.title}>From:</Text>
+              <Text>{item.source_address}</Text>
             </View>
             <Button style={styles.trip_button} mode='contained' onPress={() => startTrip(item)}>Take</Button>
           </View>
@@ -115,15 +117,13 @@ const TripsAvailableScreen = ({navigation}) => {
 
 
     return (
-      <View>
-        <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
           <FlatList
             renderItem={renderItem}
             data={trips}
             contentContainerStyle={styles.list_container}
             keyExtractor={(item) => String(item.trip_id)}
             ListEmptyComponent={ListEmptyComponent}/>
-        </ScrollView>
         <TopBar {...navigation} />
       </View>
 
@@ -199,7 +199,4 @@ const styles = StyleSheet.create({
       elevation:4,
       borderRadius:8,
   },
-  text:{
-    fontWeight:'bold'
-  }
 })

@@ -95,7 +95,7 @@ const makeWithdrawal = async (trip_id, jwt) => {
 
 const createWallet = async (jwt, user_id) => {
 
-    const url = URL_PAGOS + '/wallet' + user_id;
+    const url = URL_PAGOS + '/wallet/' + user_id;
 
     const bearer = 'Bearer ' + jwt;
 
@@ -105,7 +105,6 @@ const createWallet = async (jwt, user_id) => {
         headers: {
             'Accept': 'application/json',
             'Authorization': bearer,
-            'Content-Type': 'application/json',
             },
     });
     console.log(JSON.stringify(response))
@@ -127,6 +126,8 @@ const putPayment = async (jwt, trip_id, amount, paid, collected) => {
         collected
     })
 
+    console.log("sending this body: ", body )
+
     try {
         const response = await fetch(url,
         {
@@ -138,7 +139,7 @@ const putPayment = async (jwt, trip_id, amount, paid, collected) => {
                 'Content-Type': 'application/json',
               },
         });
-        console.log(JSON.stringify(response))
+        console.log(response)
         return response;
 
     } catch (err) {

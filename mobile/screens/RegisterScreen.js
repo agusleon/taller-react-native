@@ -1,14 +1,17 @@
 /* eslint-disable no-unused-vars */
-import  React, {useState, useContext} from 'react';
-import { StyleSheet, View, SafeAreaView, Dimensions, Keyboard} from 'react-native';
+import  React, {useState, useContext, useCallback,useRef, useEffect} from 'react';
+import { StyleSheet, View, SafeAreaView, Dimensions, Keyboard, Platform} from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator} from 'react-native-paper';
 import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
-import { createUser } from '../services/users';
+import { createDriver, createPassenger, createUser } from '../services/users';
 import * as Location from 'expo-location';
 import { getCurrentLocation } from '../services/location';
 import { createWallet } from '../services/payments';
+import { getSuggestions } from '../services/cars';
+import { v4 as uuid } from 'uuid';
+import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
 
 const {width, height} = Dimensions.get("window");
 
@@ -16,15 +19,21 @@ const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.02;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
-export default function RegisterScreen({navigation}) {
+export default function RegisterScreen() {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
-    const [wallet, setWallet] = useState('')
     const [loading, setLoading] = useState(false)
     const [keyboardOpen, setKeyboardOpen] = useState(false)
     const [confirmedPassword, setConfirmedPassword] = useState('')
+    const [suggestionsList, setSuggestionsList] = useState(null)
+    const [selectedItem, setSelectedItem] = useState(null)
+    const [patent, setPatent] = useState('');
+
+    
+    const searchRef = useRef(null)
+    const dropdownController = useRef(null)
 
     Keyboard.addListener(
         'keyboardDidShow',
@@ -39,7 +48,35 @@ export default function RegisterScreen({navigation}) {
         }
     );
 
-    const {role, setUser, setCurrentLocation, setLoggedIn} = useContext(FiuberContext);
+    const {role, setUser, setCurrentLocation, setLoggedIn, setFocusLocation} = useContext(FiuberContext);
+
+    const onOpenSuggestionsList = useCallback(isOpened => {}, [])
+    const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
+
+    async function getSuggestionsList(q){
+        console.log("entro aca")
+        const filterToken = q.toLowerCase()
+        console.log('getSuggestions', q)
+        try {
+            const response = await getSuggestions(q.toLowerCase())
+        
+            console.log("items ", response)
+            
+            const suggestions = response.map(r => ({
+                id: uuid(), 
+                title: `${r.make} ${r.model} ${r.year}`
+            }))
+            
+            setSuggestionsList(suggestions)
+            console.log("suggestions ", [...new Set(suggestions)])
+            console.log("la list", suggestionsList)
+        } catch (err) {
+            alert(err.message)
+            console.log("Could not retrieve car model suggestions")
+            return;
+        }
+       
+        }
     
     const handleRegister = async () => {
         setLoading(true);
@@ -49,10 +86,9 @@ export default function RegisterScreen({navigation}) {
             await registerUserWithEmailAndPassword(username, email, password, role);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
-            
-            // se crea el usuario en firestore
-            const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
+            console.log(idTokenResult.token)
 
+            // se crea la wallet
             await createWallet(idTokenResult.token, user_uid)
 
             // se busca la current location del user
@@ -73,18 +109,40 @@ export default function RegisterScreen({navigation}) {
                 longitudeDelta:  LONGITUDE_DELTA,
                 latitudeDelta:  LATITUDE_DELTA
             }
-            setCurrentLocation(address);
             
-            // se guarda el usuario en el context (su rol ya se guardo cuando eligio como registrarse)
-            const user = {
-                uid: user_response.uid,
-                name: user_response.name,
-                email: user_response.email,
-                wallet: user_response.wallet,
-                password: password,
-                jwt: idTokenResult.token,
+            // se crea el usuario en firestore
+            if(role == 'passenger'){
+
+                const user_response = await createPassenger(username, role, user_uid, idTokenResult.token);
+                const user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    email,
+                    password: password,
+                    jwt: idTokenResult.token,
+                }
+
+                setUser(user)
+                
+            }else{
+
+                const user_response = await createDriver(username, role, user_uid, idTokenResult.token, selectedItem, patent);
+                const user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    email,
+                    password: password,
+                    jwt: idTokenResult.token,
+                    car_model: user_response.car_description.title,
+                    car_patent: user_response.plate
+                }
+
+                setUser(user)
+
             }
-            setUser(user)
+            
+            setCurrentLocation(address)
+            setFocusLocation(address)
 
             // se cambia el contexto
             setLoggedIn(true)
@@ -98,6 +156,13 @@ export default function RegisterScreen({navigation}) {
         }
         
     }
+
+    useEffect((q)=>{
+        if (role == 'driver') {
+            getSuggestionsList(q)
+        }
+    },[])
+
     if(loading){
 
         return (
@@ -127,6 +192,40 @@ export default function RegisterScreen({navigation}) {
                                 onChangeText={email => setEmail(email)}
                                 left={<TextInput.Icon icon="at" />}
                                 />
+                            {(role=='driver') && 
+                                <View>
+                                    <AutocompleteDropdown
+                                            ref={searchRef}
+                                            controller={controller => {
+                                                dropdownController.current = controller
+                                            }}
+                                            direction={Platform.select({ ios: 'down' })}
+                                            onClear={onClearPress}
+                                            dataSet={suggestionsList}
+                                            onChangeText={getSuggestionsList}
+                                            onSelectItem={item => {
+                                                item && setSelectedItem(item)
+                                            }}
+                                            debounce={600}
+                                            suggestionsListMaxHeight={Dimensions.get('window').height * 0.4}
+                                            onOpenSuggestionsList={onOpenSuggestionsList}
+                                            textInputProps={
+                                                {placeholder: 'Type 3+ letters car model'}
+                                                
+                                            
+                                            }
+                                    />
+                                    <TextInput
+                                        label="Patente"
+                                        value={patent}
+                                        autoCapitalize='none'
+                                        onChangeText={patent => setPatent(patent)}
+                                        left={<TextInput.Icon icon="car" />}
+                                    />
+                                    
+                                </View>
+                            }
+
                             <TextInput
                                 label="Password"
                                 value={password}
@@ -171,7 +270,7 @@ const styles = StyleSheet.create({
     },
     small_container_with_keyboard: {
         flexDirection: 'column',
-        height: '90%',
+        height: '100%',
         width: '80%',
         justifyContent: 'space-evenly',
     },

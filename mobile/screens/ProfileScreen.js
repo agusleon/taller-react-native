@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {View, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Avatar,
@@ -10,13 +10,37 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
-
+import { getTripCount, getUserInfo } from '../services/metrics';
+import { AntDesign } from '@expo/vector-icons';
 
 
 const ProfileScreen = ({navigation}) => {
 
     const {user, role} = useContext(FiuberContext);
+    const [rating, setRating] = useState(false);
+    const [tripcount, setTripCount] = useState(0);
 
+    const fetchInfo = async () => {  
+
+      try {
+        const response =  await getUserInfo(user.uid,user.jwt)
+        const response_tripcount = await getTripCount(user.uid, user.jwt, role)
+        console.log("get info ",response)
+        console.log("get info ",response_tripcount)
+        setTripCount(response_tripcount)
+        setRating(response.avg_driver_rating.toFixed(1))
+        console.log("los comments ",response.driver_ratings.map((r) =>  r.text))
+
+      } catch (err) {
+          alert("Couldn't get user metrics: ",err.message)
+          console.log("Couldn't get metrics", err.message)}     
+
+  }
+  
+    useEffect(() => {
+        fetchInfo();
+    }, []);
+    
     return (
       <SafeAreaView style={styles.container}>
         <TopBar {...navigation} />
@@ -48,12 +72,11 @@ const ProfileScreen = ({navigation}) => {
             <Text style={{color:"#777777", marginLeft: 20}}>{role}</Text>
           </View>
 
-          {(role=='passenger') ? 
-            <></>
-            :
+
+          {(role == 'driver') &&
             <View style={styles.row}>
               <Ionicons name="car-outline" color="#777777" size={20}/>
-              {/* <Text style={{color:"#777777", marginLeft: 20}}>{car.model} {car.patent}</Text> */}
+              { <Text style={{color:"#777777", marginLeft: 20}}>{user.car_model} - {user.car_patent}</Text> }
             </View>
           }
         </View>
@@ -61,31 +84,52 @@ const ProfileScreen = ({navigation}) => {
         <View style={styles.infoBoxWrapper}>
             <View style={[styles.infoBox, {
               borderRightColor: '#dddddd',
-              borderRightWidth: 1
+              borderLeftColor: '#dddddd',
+              borderRightWidth: 1,
+              borderLeftWidth:1,
             }]}>
-              <Title>0</Title>
+              <Title>{tripcount}</Title>
               <Caption>Trips</Caption>
             </View>
-            <View style={styles.infoBox}>
-              <Title>x</Title>
-              <Caption>Other info</Caption>
-            </View>
+
+            {!rating ? 
+              <View style={styles.infoBoxDriverDetails}> 
+                <View style={[styles.infoBox]}>
+                  <Caption>No rating yet.</Caption>
+                </View>
+              </View> :
+              <View style={styles.infoBoxDriverDetails}> 
+                <View style={[styles.infoBox]}>
+                  <View style={styles.infoBoxDriver}>
+                    <Title>{rating}</Title>
+                    <Ionicons name="star" color="#777777" size={20}/>
+                  </View>
+                  <Caption>Rating</Caption>
+                </View>
+              </View>
+            }
         </View>
   
         <View style={styles.menuWrapper}>
-          <TouchableRipple onPress={()=>{navigation.navigate('My Destinations')}}>
-            <View style={styles.menuItem}>
-              <Ionicons name="heart-outline" color="#FF6347" size={25}/>
-              <Text style={styles.menuItemText}>My Destinations</Text>
-            </View>
-          </TouchableRipple>
-          <TouchableRipple onPress={() => {navigation.navigate('Wallet')}}>
-            <View style={styles.menuItem}>
-              <Ionicons name="logo-bitcoin" color="#FF6347" size={25}/>
-              <Text style={styles.menuItemText}>Wallet</Text>
-            </View>
-          </TouchableRipple>
-          <TouchableRipple onPress={() => {navigation.navigate('Edit profile')}}>
+          {role == 'passenger' ?
+          <View> 
+            <TouchableRipple onPress={()=>{navigation.navigate('My Destinations')}}>
+              <View style={styles.menuItem}>
+                <Ionicons name="heart-outline" color="#FF6347" size={25}/>
+                <Text style={styles.menuItemText}>My Destinations</Text>
+              </View>
+            </TouchableRipple>
+          </View>:
+          <View> 
+            <TouchableRipple onPress={()=>{navigation.navigate('Trips Available')}}>
+              <View style={styles.menuItem}>
+                <AntDesign name="notification" size={25} color="#FF6347" />
+                <Text style={styles.menuItemText}>Trips Available</Text>
+              </View>
+            </TouchableRipple>
+          </View>
+          }
+          <TouchableRipple onPress={() => {navigation.navigate('Settings')}}>
             <View style={styles.menuItem}>
               <Ionicons name="settings-outline" color="#FF6347" size={25}/>
               <Text style={styles.menuItemText}>Settings</Text>
@@ -132,9 +176,26 @@ const ProfileScreen = ({navigation}) => {
       height: 100,
     },
     infoBox: {
+      width: '30%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      
+    },
+    infoBoxDriver: {
+     
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+  
+      
+    },
+    infoBoxDriverDetails: {
       width: '50%',
       alignItems: 'center',
       justifyContent: 'center',
+      flexDirection: 'row',
+      
+      
     },
     menuWrapper: {
       marginTop: 10,
