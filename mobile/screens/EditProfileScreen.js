@@ -48,11 +48,7 @@ const EditProfileScreen = ({navigation}) => {
     }
 
     async function getSuggestionsList(q){
-      console.log("entro aca")
-      console.log('getSuggestions', q)
       const response = await getSuggestions(q.toLowerCase())
-      
-      console.log("items ", response)
       
       const suggestions = response.map(r => ({
           id: uuid(), 
@@ -61,11 +57,10 @@ const EditProfileScreen = ({navigation}) => {
       }
       )
       )
-      console.log("title ", suggestions.title)
+      
     
       setSuggestionsList(suggestions)
      
-      console.log("la list", suggestionsList)
     }
 
     useEffect((q)=>{
@@ -75,7 +70,7 @@ const EditProfileScreen = ({navigation}) => {
   },[])
 
     const handleSave = async () => {
-            console.log("model ", modelEdit)
+      
             try{
               if(roleEdit == 'passenger') {
                 if(!nameEdit || !roleEdit ){
@@ -85,7 +80,7 @@ const EditProfileScreen = ({navigation}) => {
                 await updateUserInfo(user.uid, user.jwt, nameEdit,  roleEdit)
                 const user_response = await getUser(user.uid, user.jwt);
                 console.log("User response GET", user_response)
-                console.log("User user", user)
+               
                  
                 const updateUser = {
                   uid: user_response.uid,
@@ -107,7 +102,7 @@ const EditProfileScreen = ({navigation}) => {
                 setModelEdit(selectedModel.title)
                 await updateDriverInfo(user.uid, user.jwt, nameEdit,  roleEdit, modelEdit, patentEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User  DRIVER response GET", user_response)
+    
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
