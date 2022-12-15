@@ -4,7 +4,7 @@ import { FiuberContext } from '../context/FiuberContext';
 
 const GooglePlacesInput = ({placeholder, onPlaceSelected}) => {
 
-  const {favoriteDestinations, setStatus} = useContext(FiuberContext);
+  const {favoriteDestinations} = useContext(FiuberContext);
   const [predefinedPlacesArray, setPredefinedPlacesArray] = useState([]);
 
   useEffect(() => {

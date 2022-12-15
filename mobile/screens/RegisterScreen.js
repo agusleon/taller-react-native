@@ -53,7 +53,7 @@ export default function RegisterScreen() {
     const {role, setUser, setCurrentLocation, setLoggedIn, setFocusLocation} = useContext(FiuberContext);
 
     const onOpenSuggestionsList = useCallback(isOpened => {}, [])
-    const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
+    const onClearPress = useCallback(() => {setSuggestionsList([]) }, [])
 
     async function getSuggestionsList(q){
         const filterToken = q.toLowerCase()
@@ -61,12 +61,15 @@ export default function RegisterScreen() {
         try {
             const response = await getSuggestions(q.toLowerCase())
             
-            const suggestions = response.map(r => ({
-                id: uuid(), 
-                title: `${r.make} ${r.model}`
-            }))
-            
-            setSuggestionsList(suggestions)
+            if (response != null) {
+                const suggestions = response.map(r => ({
+                    id: uuid(), 
+                    title: `${r.make} ${r.model}`
+                }))
+                setSuggestionsList(suggestions)
+            } else {
+                setSuggestionsList([])
+            }
 
         } catch (err) {
             alert(err.message)

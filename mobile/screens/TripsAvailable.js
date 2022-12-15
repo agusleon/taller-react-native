@@ -88,7 +88,6 @@ const TripsAvailableScreen = ({navigation}) => {
         try {
             console.log("Searching for trips")
             const trips = await getAvailableTrips(user.jwt);
-         
             if(trips.length>0 && !notification){
               registerForPushNotificationsAsync("New notification", "You have new trips available", notificationListener)
               setNotification(true)
