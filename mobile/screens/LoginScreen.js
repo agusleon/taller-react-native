@@ -118,6 +118,7 @@ export default function LoginScreen({navigation}) {
             console.log("Login: Error buscando el usuario");
             setLoading(false)
             alert(err.message);
+            return;
         }
     };
 

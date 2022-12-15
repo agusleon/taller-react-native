@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import {View, SafeAreaView, StyleSheet} from 'react-native';
 import {
   Avatar,
@@ -12,6 +12,18 @@ import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
 import { getTripCount, getUserInfo } from '../services/metrics';
 import { AntDesign } from '@expo/vector-icons';
+//imports del notifications
+import * as Notifications from 'expo-notifications';
+import { sendPushNotification, getReceipts } from '../services/notifications';
+
+//parte del notifications
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 
 const ProfileScreen = ({navigation}) => {
@@ -19,7 +31,47 @@ const ProfileScreen = ({navigation}) => {
     const {user, role} = useContext(FiuberContext);
     const [rating, setRating] = useState(false);
     const [tripcount, setTripCount] = useState(0);
-   console.log("EL PATENT ", user.car_plate)
+
+////////// Todo para que funcione notifications
+
+    const notificationListener = useRef();
+    const responseListener = useRef();
+    const [notification, setNotification] = useState(false);
+
+    
+    const registerForPushNotificationsAsync = async () =>{ 
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      console.log("final srarus ",finalStatus)
+      if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          console.log("srarus ",status)
+          finalStatus = status;
+      }
+      if (finalStatus !== 'granted') {
+          alert('Failed to get push token for push notification!');
+          return;
+      }
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log(token);
+
+      const response = await sendPushNotification(token, "Notificacion title", "prueba notificacion:))");
+      
+      const id = await getReceipts(response.data.id)
+      console.log("los id ",id)
+
+      notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+      return token;
+    }
+
+    useEffect(() => {
+      registerForPushNotificationsAsync();
+  });
+  /////////// End notifications
+   
     const fetchInfo = async () => {  
 
       try {
