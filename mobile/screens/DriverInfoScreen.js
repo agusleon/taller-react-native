@@ -13,7 +13,7 @@ import {getUserInfo} from '../services/metrics';
 
 const DriverInfoScreen = ({navigation}) => {
   
-  const {user, driver, userReviewed, setDriver} = useContext(FiuberContext);
+  const {user, driver, userReviewed} = useContext(FiuberContext);
   const [rating, setRating] = useState(''); 
   const [comments, setComments] = useState([]);
 
@@ -21,13 +21,11 @@ const DriverInfoScreen = ({navigation}) => {
 
       try {
         const response =  await getUserInfo(driver.id,user.jwt)
-        console.log("get info ",response)
+
         if (response.avg_driver_rating != null) {
           setRating(response.avg_driver_rating.toFixed(1))
         }
-        // setComments(comments.concat(response.driver_ratings.map((r) =>  r.text)))
         setComments(response.driver_ratings.map((r) =>  r.text))
-        console.log("los comments ",response.driver_ratings.map((r) =>  r.text))
 
       } catch (err) {console.log("Error en review al driver", err)}     
 

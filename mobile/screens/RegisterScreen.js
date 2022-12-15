@@ -12,6 +12,7 @@ import { createWallet } from '../services/payments';
 import { getSuggestions } from '../services/cars';
 import { v4 as uuid } from 'uuid';
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
+import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
 
@@ -54,13 +55,11 @@ export default function RegisterScreen() {
     const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
 
     async function getSuggestionsList(q){
-        console.log("entro aca")
+
         const filterToken = q.toLowerCase()
-        console.log('getSuggestions', q)
+
         try {
             const response = await getSuggestions(q.toLowerCase())
-        
-            console.log("items ", response)
             
             const suggestions = response.map(r => ({
                 id: uuid(), 
@@ -68,8 +67,7 @@ export default function RegisterScreen() {
             }))
             
             setSuggestionsList(suggestions)
-            console.log("suggestions ", [...new Set(suggestions)])
-            console.log("la list", suggestionsList)
+
         } catch (err) {
             alert(err.message)
             console.log("Could not retrieve car model suggestions")
@@ -86,7 +84,7 @@ export default function RegisterScreen() {
             await registerUserWithEmailAndPassword(username, email, password, role);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
-            console.log(idTokenResult.token)
+            console.log("Token: ", idTokenResult.token)
 
             // se crea la wallet
             await createWallet(idTokenResult.token, user_uid)
@@ -115,7 +113,7 @@ export default function RegisterScreen() {
             if(role == 'passenger'){
 
                 const user_response = await createPassenger(username, role, user_uid, idTokenResult.token);
-                const user = {
+                const new_user = {
                     uid: user_response.uid,
                     name: user_response.name,
                     email,
@@ -123,12 +121,12 @@ export default function RegisterScreen() {
                     jwt: idTokenResult.token,
                 }
 
-                setUser(user)
+                setUser(new_user)
                 
             }else{
 
                 const user_response = await createDriver(username, role, user_uid, idTokenResult.token, selectedItem.title, patent);
-                const user = {
+                const new_user = {
                     uid: user_response.uid,
                     name: user_response.name,
                     email,
@@ -138,9 +136,11 @@ export default function RegisterScreen() {
                     car_plate: user_response.plate
                 }
 
-                setUser(user)
+                setUser(new_user)
 
             }
+
+            await postEvent('REGISTER', idTokenResult.token);
             
             setCurrentLocation(address)
             setFocusLocation(address)

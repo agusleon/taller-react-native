@@ -36,7 +36,8 @@ export default function HomeScreenDriver ({navigation}) {
         setShowDirections,
         setStatus,
         setDestination,
-        setIntervalID
+        setIntervalID,
+        setUserReviewed
     } = useContext(FiuberContext);
 
     useEffect(() => {
@@ -87,7 +88,7 @@ export default function HomeScreenDriver ({navigation}) {
         let interval = setInterval(async () => {
             try {
                 const response = await getTrip(passenger.trip_id, user.jwt);
-                console.log(response)
+
                 if (!response.detail) {
                     if ((response.paid == 1) && (response.collected == 0)) {
                         setAwaitingPayment(false)
@@ -112,6 +113,9 @@ export default function HomeScreenDriver ({navigation}) {
         setDestination(false)
         setStatus(BEGIN)
         setShowDirections(false)
+        setAwaitingPayment(true)
+        setAwaitingCollection(true)
+        setUserReviewed(false)
     }
 
     const handleGoingButton = async () => {
@@ -120,7 +124,6 @@ export default function HomeScreenDriver ({navigation}) {
             
             if (!response.detail) {
                 setStatus(response.trip_state)
-                console.log(JSON.stringify(response))
 
             } else {
                 alert(JSON.stringify(response.detail))
@@ -137,7 +140,6 @@ export default function HomeScreenDriver ({navigation}) {
     const handleFinishButton = async () => {
         try {
             const distanceInMeters = getDistanceBetweenTwoPoints(focusLocation, destination)
-            console.log(distanceInMeters)
 
             if (distanceInMeters < 500){
 
@@ -145,7 +147,6 @@ export default function HomeScreenDriver ({navigation}) {
                 try {
 
                     const response = await updateTripStatus(user.jwt, passenger.trip_id, TRIP_FINISHED);
-                    console.log(JSON.stringify(response))
                     setStatus(response.trip_state);
                     awaitPayment()
 

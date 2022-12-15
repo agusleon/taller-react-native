@@ -80,7 +80,6 @@ const EditProfileScreen = ({navigation}) => {
 
                 await updateUserInfo(user.uid, user.jwt, nameEdit,  roleEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User response GET", user_response)
                  
                 const updateUser = {
                   uid: user_response.uid,
@@ -92,14 +91,12 @@ const EditProfileScreen = ({navigation}) => {
                 setUser(updateUser)
     
               }else{
-                console.log(patentEdit)
                 if (selectedModel) {
                   setModelEdit(selectedModel.title)
                 }
                
                 await updateDriverInfo(user.uid, user.jwt, nameEdit,  roleEdit, modelEdit, patentEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User DRIVER response GET", user_response)
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
@@ -118,7 +115,7 @@ const EditProfileScreen = ({navigation}) => {
               setEditable(false)
     
             }catch (err) {
-              console.log("Error buscando el usuario");
+              console.log("Error buscando el usuario", err.message);
               alert(err.message);
             }
     }

@@ -102,7 +102,6 @@ const updateUserInfo = async( uid, jwt,name, role) => {
           },
     });
     const json = await response.json();
-    console.log("el put response", json);
     return json;
   } catch (err) {
     console.error(err);
@@ -134,7 +133,6 @@ const updateDriverInfo = async( uid, jwt, name, role, car_description, plate) =>
           },
     });
     const json = await response.json();
-    console.log("el put response", json);
     return json;
   } catch (err) {
     console.error(err);

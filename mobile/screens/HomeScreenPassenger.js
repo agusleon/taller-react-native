@@ -11,6 +11,9 @@ import { AntDesign } from '@expo/vector-icons';
 import {getDistance} from 'geolib';
 import { getUser } from '../services/users';
 import { getDistanceBetweenTwoPoints } from '../utils/methods';
+import { getCurrentLocation } from '../services/location';
+import * as Location from 'expo-location';
+
 import { 
     BEGIN,
     AVAILABLE,
@@ -45,7 +48,6 @@ export default function HomeScreen ({navigation}) {
         setFocusLocation,
         favoriteDestinations,
         setShowDirections,
-        currentLocation,
         setLoadingFee,
         setFavoriteDestinations,
         setFee,
@@ -55,7 +57,8 @@ export default function HomeScreen ({navigation}) {
         setGotDriver,
         setDriverLocation,
         setOnGoing,
-        setCurrentLocation
+        setCurrentLocation,
+        setUserReviewed
     } = useContext(FiuberContext);
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -70,7 +73,7 @@ export default function HomeScreen ({navigation}) {
         setShowDirections(true)
 
         try {
-            const response = await createTrip(user.jwt, currentLocation, destination)
+            const response = await createTrip(user.jwt, focusLocation, destination)
             if(!response.detail){
                 const response_payment = await putPayment(user.jwt, response.trip_id, fee, 0, 0)
                 console.log(JSON.stringify(response_payment))
@@ -183,7 +186,6 @@ export default function HomeScreen ({navigation}) {
                 setOnGoing(true)
 
                 const distanceInMeters = getDistanceBetweenTwoPoints(focusLocation, destination)
-                console.log(distanceInMeters)
 
                 if (distanceInMeters < 10){
                     setShowDirections(false)
@@ -211,15 +213,37 @@ export default function HomeScreen ({navigation}) {
         
     }
 
-    const handleReviewDriver = () => {
-        
-        navigation.navigate('Driver Info Screen')
+    const handleReviewDriver = async () => {
+
+
+
+        const location = await getCurrentLocation();
+        let { longitude, latitude } = location.coords;
+        let regionName = await Location.reverseGeocodeAsync({
+            longitude,
+            latitude,
+        });
+        console.log(location)
+        const street = (regionName[0].street)
+        const streetNumber = regionName[0].streetNumber
+        const city = regionName[0].city
+        const description = `${street} ${streetNumber}, ${city}`
+        const address = {
+            description: description,
+            longitude:location.coords.longitude,
+            latitude:location.coords.latitude,
+            longitudeDelta:  LONGITUDE_DELTA,
+            latitudeDelta:  LATITUDE_DELTA
+        }
+        setCurrentLocation(address);
+        setFocusLocation(address);
+        setUserReviewed(false)
         setDestination(false)
-        setFocusLocation({...currentLocation})
         setStatus(BEGIN)
         setGotDriver(false)
         setShowDirections(false)
         setOnGoing(false)
+        navigation.navigate('Driver Info Screen');
     }
 
     const handleFavoriteButton = () => {
@@ -233,9 +257,9 @@ export default function HomeScreen ({navigation}) {
         try {
 
             const response_deposit = await makeDeposit(driver.trip_id, user.jwt);
-            console.log(response_deposit)
+            console.log(JSON.stringify(response_deposit))
             const response_payment = await putPayment(user.jwt, driver.trip_id, fee, 1, 0)
-            console.log(response_payment)
+            console.log(JSON.stringify(response_payment))
             
             setPaymentMade(true)
             setLoadingPayment(false)
@@ -250,7 +274,6 @@ export default function HomeScreen ({navigation}) {
 
     const handleCancelButton = async () => {
         setDestination(false)
-        setFocusLocation({...currentLocation})
         setStatus(BEGIN)
         setDriver(false)
         setGotDriver(false)
@@ -277,7 +300,7 @@ export default function HomeScreen ({navigation}) {
 
         // retrieve estimated fee
         const distanceInMeters = getDistance(
-            {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
+            {latitude: focusLocation.latitude, longitude: focusLocation.longitude},
             {latitude: address.latitude, longitude: address.longitude}
         )
         const estimated_fee = await estimateFee(distanceInMeters);

@@ -85,7 +85,6 @@ const TripsAvailableScreen = ({navigation}) => {
         try {
             console.log("Searching for trips")
             const trips = await getAvailableTrips(user.jwt);
-            console.log(trips)
             setTrips(trips)
         } catch (e) {
           console.log(e);

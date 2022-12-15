@@ -26,8 +26,7 @@ const ProfileScreen = ({navigation}) => {
       try {
         const response =  await getUserInfo(user.uid,user.jwt)
         const response_tripcount = await getTripCount(user.uid, user.jwt, role)
-        console.log("get info ",response)
-        console.log(response_tripcount)
+
         setTripCount(response_tripcount)
         if (role == 'passenger'){
           if (response.avg_passenger_rating != null) {
