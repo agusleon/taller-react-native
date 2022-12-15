@@ -1,5 +1,6 @@
 import { URL_NOTIFICATIONS_SEND, URL_NOTIFICATIONS_PUSH } from "../utils/vars";
 import * as Notifications from 'expo-notifications';
+import React, { useEffect} from 'react';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -95,7 +96,14 @@ const registerForPushNotificationsAsync = async (titleMessage, message, notifica
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
         console.log(notification)
-  });
+    });
+
+    useEffect(() => {
+
+        notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        console.log(notification)
+        });
+    },);
 
     return token;
   }

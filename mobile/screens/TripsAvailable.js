@@ -8,7 +8,6 @@ import { getAvailableTrips, updateTripStatus } from '../services/trips';
 import { AWAITING_DRIVER, BEGIN } from '../utils/vars';
 import { registerForPushNotificationsAsync } from '../services/notifications';
 
-
 const TripsAvailableScreen = ({navigation}) => {
 
     const {user, focusLocation, setPassenger, setDestination, setShowDirections, setStatus, status} = useContext(FiuberContext);
@@ -90,6 +89,7 @@ const TripsAvailableScreen = ({navigation}) => {
             console.log("Searching for trips")
             const trips = await getAvailableTrips(user.jwt);
             console.log(trips)
+         
             if(trips.length>0 && !notification){
               registerForPushNotificationsAsync("New notification", "You have new trips available", notificationListener)
               setNotification(true)
@@ -105,7 +105,8 @@ const TripsAvailableScreen = ({navigation}) => {
       useEffect(() => {
         if (status == BEGIN) {
           fetchAvailableTrips();
-        }
+    }
+
       }, [focusLocation]);
 
     const renderItem=({item})=>{
