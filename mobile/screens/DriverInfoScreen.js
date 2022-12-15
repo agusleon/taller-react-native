@@ -13,7 +13,7 @@ import {getUserInfo} from '../services/metrics';
 
 const DriverInfoScreen = ({navigation}) => {
   
-  const {user, driver, userReviewed, setDriver} = useContext(FiuberContext);
+  const {user, driver, userReviewed} = useContext(FiuberContext);
   const [rating, setRating] = useState(''); 
   const [comments, setComments] = useState([]);
 
