@@ -1,6 +1,6 @@
 import { URL_NOTIFICATIONS_SEND, URL_NOTIFICATIONS_PUSH } from "../utils/vars";
 import * as Notifications from 'expo-notifications';
-import React, { useEffect} from 'react';
+import { useEffect} from 'react';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,

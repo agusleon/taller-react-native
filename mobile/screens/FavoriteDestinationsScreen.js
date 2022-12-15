@@ -19,7 +19,7 @@ const FavoriteDestinationsScreen = ({navigation}) => {
 
   const {
     user, 
-    currentLocation, 
+    focusLocation, 
     setLoadingFee,
     setFee,
     favoriteDestinations, 
@@ -47,7 +47,7 @@ const FavoriteDestinationsScreen = ({navigation}) => {
         navigation.navigate('Home')
 
         const distanceInMeters = getDistance(
-            {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
+            {latitude: focusLocation.latitude, longitude: focusLocation.longitude},
             {latitude: address.latitude, longitude: address.longitude}
         )
         const estimated_fee = await estimateFee(distanceInMeters);
