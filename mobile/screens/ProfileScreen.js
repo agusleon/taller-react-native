@@ -17,13 +17,13 @@ import * as Notifications from 'expo-notifications';
 import { sendPushNotification, getReceipts } from '../services/notifications';
 
 //parte del notifications
-Notifications.setNotificationHandler({
+/* Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
-});
+}); */
 
 
 const ProfileScreen = ({navigation}) => {
@@ -34,12 +34,12 @@ const ProfileScreen = ({navigation}) => {
 
 ////////// Todo para que funcione notifications
 
-    const notificationListener = useRef();
+  /*   const notificationListener = useRef();
     const responseListener = useRef();
     const [notification, setNotification] = useState(false);
-
+ */
     
-    const registerForPushNotificationsAsync = async () =>{ 
+    /* const registerForPushNotificationsAsync = async () =>{ 
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
       console.log("final srarus ",finalStatus)
@@ -69,7 +69,7 @@ const ProfileScreen = ({navigation}) => {
 
     useEffect(() => {
       registerForPushNotificationsAsync();
-  });
+  }); */
   /////////// End notifications
    
     const fetchInfo = async () => {  

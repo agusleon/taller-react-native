@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useRef } from 'react'
 import { View, StyleSheet, TextInput, Dimensions } from 'react-native'
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'; 
 import { ActivityIndicator, Button, Modal, Text, TouchableRipple, Avatar } from 'react-native-paper'
@@ -10,6 +10,7 @@ import { createCustomDestination, createTrip, estimateFee, getTotalFee, getTrip 
 import { AntDesign } from '@expo/vector-icons'; 
 import {getDistance} from 'geolib';
 import { getUser } from '../services/users';
+import { registerForPushNotificationsAsync } from '../services/notifications';
 import { getDistanceBetweenTwoPoints } from '../utils/methods';
 import { 
     BEGIN,
@@ -32,6 +33,7 @@ export default function HomeScreen ({navigation}) {
     const [favoriteName, setFavoriteName] = useState('');
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [paymentMade, setPaymentMade] = useState(false);
+    const notificationListener = useRef();
 
     const {
         user,
@@ -102,6 +104,9 @@ export default function HomeScreen ({navigation}) {
 
                 if (response.trip_state == AWAITING_DRIVER) {
                     console.log("Ive got driver")
+                    
+                    registerForPushNotificationsAsync("New notification", "You have a driver!", notificationListener)
+               
                     const response_driver = await getUser(response.driver_id, user.jwt);
                     
                     const driver_state = {

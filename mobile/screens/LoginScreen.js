@@ -7,7 +7,7 @@ import { getUser } from '../services/users';
 import { getCurrentLocation } from '../services/location';
 import * as Location from 'expo-location';
 import { getFavoriteDestinations, updateDriverPosition } from '../services/trips';
-
+import * as Notifications from 'expo-notifications';
 const {width, height} = Dimensions.get("window");
 
 const ASPECT_RATIO = width / height;
@@ -60,6 +60,23 @@ export default function LoginScreen({navigation}) {
                 setLoading(false)
                 return;
             }
+
+            //Permiso para enviar notificaciones
+    
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            console.log("final srarus ",finalStatus)
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                console.log("srarus ",status)
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            
+              
             
             // se busca la current location
             const location = await getCurrentLocation();

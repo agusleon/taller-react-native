@@ -1,4 +1,12 @@
 import { URL_NOTIFICATIONS_SEND, URL_NOTIFICATIONS_PUSH } from "../utils/vars";
+import * as Notifications from 'expo-notifications';
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const sendPushNotification = async (targetExpoPushToken, titleMessage, message) => {
 
@@ -75,5 +83,20 @@ const getReceipts = async (id) => {
     alert("error",err.message);
     }
 }
+const registerForPushNotificationsAsync = async (titleMessage, message, notificationListener) =>{ 
+    
+    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
 
-export {sendPushNotification,getReceipts}
+    const response = await sendPushNotification(token, titleMessage,message);
+    
+    const id = await getReceipts(response.data.id)
+    console.log("los id de trips",id)
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        console.log(notification)
+  });
+
+    return token;
+  }
+export {sendPushNotification,getReceipts,registerForPushNotificationsAsync}
