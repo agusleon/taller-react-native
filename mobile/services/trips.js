@@ -62,7 +62,7 @@ const createDefaultDestination = async (jwt, address, longitude, latitude) => {
   const deleteCustomDestination = async (jwt, name) => {
 
     const url = URL_VIAJES + '/destinations/name/?destination_name=' + name;
-    console.log(url)
+
     const bearer = 'Bearer '+jwt;
     try {
         const response = await fetch(url,
@@ -112,7 +112,29 @@ const getFavoriteDestinations = async (jwt) => {
 
     const url = URL_VIAJES + '/destinations/name/';
     const bearer = 'Bearer '+jwt;
-    console.log
+
+    const response = await fetch(url,
+        {
+            method:'GET',
+            headers: {
+                'Authorization': bearer,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+        });
+
+    const json = await response.json();
+    if (json.detail){
+        return [];
+    }
+    return json;
+};
+
+const getTrips = async (jwt) => {
+
+    const url = URL_VIAJES + '/trips/';
+    const bearer = 'Bearer '+jwt;
+
     try {
         const response = await fetch(url,
         {
@@ -123,18 +145,17 @@ const getFavoriteDestinations = async (jwt) => {
                 'Content-Type': 'application/json',
               },
         });
-        console.log(response);
+
         const json = await response.json();
         if (json.detail){
-            return '';
+            return [];
         }
         return json;
     } catch (err) {
       console.error(err);
       alert("error",err.message);
     }
-
-};
+}
 
 const createTrip = async (jwt, source, destination ) => {
 
@@ -172,28 +193,114 @@ const createTrip = async (jwt, source, destination ) => {
     }
 }
 
-// const getAvailableTrips = async (distanceInMeters) => {
-//     const url = 'https://fiuber-back-fastapi-dev-g10.herokuapp.com/trips/';
-//     try {
-//         const response = await fetch(url,
-//         {
-//             method:'GET',
-//             headers: {
-//                 'Accept': 'application/json',
-//                 'Content-Type': 'application/json',
-//               },
-//         });
-//         const json = await response.json();
-//         return json;
-//     } catch (err) {
-//       console.error(err);
-//       alert("error",err.message);
-//     }
-// }
+const getAvailableTrips = async (jwt) => {
+    const url = URL_VIAJES + '/trips/close/';
+
+    const bearer = 'Bearer ' + jwt;
+    try {
+        const response = await fetch(url,
+        {
+            method:'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': bearer,
+                'Content-Type': 'application/json',
+              },
+        });
+
+        const json = await response.json();
+        return json;
+        
+    } catch (err) {
+      console.error(err);
+      alert("error",err.message);
+    }
+}
+
+const updateTripStatus = async (jwt, trip_id, status) => {
+    const url = URL_VIAJES + '/trips/state';
+
+    const bearer = 'Bearer ' + jwt;
+
+    const body = JSON.stringify({
+        trip_id,
+        trip_state:status
+    })
+
+    try {
+        const response = await fetch(url,
+        {
+            method:'PATCH',
+            body: body,
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': bearer,
+                'Content-Type': 'application/json',
+              },
+        });
+        const json = await response.json();
+        return json;
+    } catch (err) {
+      console.error(err);
+      alert("error",err.message);
+    }
+}
+
+const updateDriverPosition = async (position, jwt) => {
+
+    const url = URL_VIAJES + '/position/';
+
+    const bearer = 'Bearer '+jwt;
+
+    const body = JSON.stringify({
+        latitude: position.latitude,
+        longitude: position.longitude,
+    })
+
+    try {
+        const response = await fetch(url,
+        {
+            method:'PUT',
+            body: body,
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': bearer,
+                'Content-Type': 'application/json',
+              },
+        });
+        const json = await response.json();
+        return json;
+    } catch (err) {
+      console.error(err);
+      alert("error",err.message);
+    }
+
+}
 
 const estimateFee = async (distanceInMeters) => {
 
     const url = URL_BACKOFFICE + '/rules/execute?tripLengthMeters=' + distanceInMeters;
+
+    try {
+        const response = await fetch(url,
+        {
+            method:'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+        });
+        const json = await response.json();
+        return json;
+    } catch (err) {
+      console.error(err);
+      alert("error",err.message);
+    }
+}
+
+const getTotalFee = async (distanceInMeters, passenger_id, driver_id) => {
+
+    const url = URL_BACKOFFICE + '/rules/execute?tripLengthMeters=' + distanceInMeters + '&passengerId=' + passenger_id + '&driverId=' + driver_id;
 
     try {
         const response = await fetch(url,
@@ -276,16 +383,35 @@ const getDriverLocation = async (trip_id, jwt) => {
                     'Content-Type': 'application/json',
                   },
             });
+
         const json = await response.json();
+
         const driver_locations = {
             latitude: json.driver_latitude,
             longitude: json.driver_longitude
         }
+
         return driver_locations;
+
     } catch (err) {
         console.error(err);
         alert("error", err.message)
     }
 }
 
-export {createDefaultDestination, getDefaultDestination, createCustomDestination, getFavoriteDestinations, deleteCustomDestination, estimateFee, createTrip, getTrip, getStatus, getDriverLocation}
+export {
+    createDefaultDestination, 
+    getDefaultDestination, 
+    createCustomDestination, 
+    getFavoriteDestinations, 
+    deleteCustomDestination, 
+    estimateFee, 
+    createTrip, 
+    getTrip, 
+    getStatus, 
+    getDriverLocation, 
+    updateDriverPosition, 
+    getAvailableTrips, 
+    updateTripStatus, 
+    getTotalFee, 
+    getTrips}

@@ -6,7 +6,9 @@ import { FiuberContext } from '../context/FiuberContext';
 import { getUser } from '../services/users';
 import { getCurrentLocation } from '../services/location';
 import * as Location from 'expo-location';
-import { getFavoriteDestinations } from '../services/trips';
+import { getFavoriteDestinations, updateDriverPosition } from '../services/trips';
+import * as Notifications from 'expo-notifications';
+import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
 
@@ -20,8 +22,9 @@ export default function LoginScreen({navigation}) {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [keyboardOpen, setKeyboardOpen] = useState(false);
+    const [existingUser, setExistingUser] = useState(true);
 
-    const {setLoggedIn, setRole, role, setCurrentLocation, setUser, currentLocation, setFavoriteDestinations, user, setFocusLocation} = useContext(FiuberContext);
+    const {setLoggedIn, setRole, role, setCurrentLocation, setUser, focusLocation, setFavoriteDestinations, user, setFocusLocation} = useContext(FiuberContext);
 
     Keyboard.addListener(
         'keyboardDidShow',
@@ -46,12 +49,37 @@ export default function LoginScreen({navigation}) {
             await logInWithEmailAndPassword(email, password);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
-            console.log(idTokenResult.token)
+            console.log("Token:", idTokenResult.token)
 
             // se busca al usuario
             const user_response = await getUser(user_uid, idTokenResult.token);
             console.log(user_response)
 
+            // se chequea si esta bloqueado, si lo esta, retorna. Si no lo esta, sigue.
+            if (user_response.blocked) {
+                alert("You cannot enter the app")
+                console.log("User blocked")
+                setLoading(false)
+                return;
+            }
+
+            //Permiso para enviar notificaciones
+    
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            console.log("final srarus ",finalStatus)
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                console.log("srarus ",status)
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            
+              
+            
             // se busca la current location
             const location = await getCurrentLocation();
             let { longitude, latitude } = location.coords;
@@ -59,6 +87,7 @@ export default function LoginScreen({navigation}) {
                 longitude,
                 latitude,
             });
+            console.log(location)
             const street = (regionName[0].street)
             const streetNumber = regionName[0].streetNumber
             const city = regionName[0].city
@@ -71,24 +100,37 @@ export default function LoginScreen({navigation}) {
                 latitudeDelta:  LATITUDE_DELTA
             }
             setCurrentLocation(address);
-            setFocusLocation(address)
-            console.log(currentLocation)
+            setFocusLocation(address);
             
+            if (user_response.roles[0] == 'passenger') {
 
-            // se guarda el usuario actual en el context y su rol
-            const current_user = {
-                uid: user_response.uid,
-                name: user_response.name,
-                password: password,
-                email: user_response.email,
-                wallet: user_response.wallet,
-                jwt: idTokenResult.token,
+                // se guarda el usuario actual en el context y su rol
+                const current_user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    password: password,
+                    email,
+                    jwt: idTokenResult.token,
+                }
+                
+                setUser(current_user)
+            } else {
+                const current_user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    password: password,
+                    email,
+                    jwt: idTokenResult.token,
+                    car_plate: user_response.plate,
+                    car_model: user_response.car_description
+                }
+                setUser(current_user)
             }
-            setUser(current_user)
-            console.log(current_user)
+  
+            await postEvent('LOGIN', idTokenResult.token);
+
             setRole(user_response.roles[0])
 
-            // // se cambia el contexto
             setLoggedIn(true)
             setLoading(false)
            
@@ -97,18 +139,43 @@ export default function LoginScreen({navigation}) {
             console.log("Login: Error buscando el usuario");
             setLoading(false)
             alert(err.message);
+            return;
         }
     };
 
+    const handleRegister = () => {
+        setExistingUser(false)
+        navigation.navigate('Onboarding');
+    }
+
     useEffect(() => {
         async function fetchaData() {
-            if(role && role == "passenger"){
-                const fetched_destinations = await getFavoriteDestinations(user.jwt);
-                if (!fetched_destinations.detail && fetched_destinations.length > 0){
-                    console.log("Destinations customs:",fetched_destinations);
-                    setFavoriteDestinations(fetched_destinations);
+            if (existingUser) {
+
+                if(role == "passenger"){
+                    try {
+                        const fetched_destinations = await getFavoriteDestinations(user.jwt);
+                        if (!fetched_destinations.detail && fetched_destinations.length > 0){
+                            console.log("Destinations customs:",fetched_destinations);
+                            setFavoriteDestinations(fetched_destinations);
+                        }
+                    } catch (err) {
+                        console.log("Could not retrieve favorite destinations: ", err.message)
+                    }
+                
+                } else if (role == "driver") {
+                    try {
+                        console.log("Updating position from login screen")
+                        const response = await updateDriverPosition(focusLocation, user.jwt)
+                        if (!response.latitude) {
+                            console.log("Could not update position");
+                        }
+                    } catch (err) {
+                        console.log("Could not update position: ", err.message)
+                    }
+                }
             }
-        }
+        
         }
         fetchaData()
         
@@ -160,7 +227,7 @@ export default function LoginScreen({navigation}) {
                     Login
                 </Button>
 
-                <Button mode="outlined" style={styles.button} onPress={() => navigation.navigate('Onboarding')}>
+                <Button mode="outlined" style={styles.button} onPress={handleRegister}>
                     Register here
                 </Button>
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { StyleSheet, TextInput, Text, View, Platform, Dimensions, Alert} from 'react-native'
 import React, {useContext, useState,  useCallback,useRef, useEffect} from 'react'
 import { FiuberContext } from '../context/FiuberContext'
@@ -8,8 +9,9 @@ import { updateUserInfo, getUser, updateDriverInfo } from '../services/users';
 import { Feather } from '@expo/vector-icons';
 import { v4 as uuid } from 'uuid';
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
-import { getSuggestions } from '../services/utilApi';
-const {width, height} = Dimensions.get("window");
+import { getSuggestions } from '../services/cars';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const EditProfileScreen = ({navigation}) => {
 
@@ -19,15 +21,13 @@ const EditProfileScreen = ({navigation}) => {
         {label: 'Driver', value: 'driver'}
     ]);
     const [editable,setEditable] = useState(false);
-    const {user, setUser, role, setRole} = useContext(FiuberContext);
+    const {user, setUser, role, setRole, email} = useContext(FiuberContext);
     const [nameEdit, setNameEdit] = React.useState(user.name);
     const [roleEdit, setRoleEdit] = React.useState(role);
     const [modelEdit, setModelEdit] = React.useState(user.car_model);
-    const [patentEdit, setPatentEdit] = React.useState(user.car_patent);
+    const [patentEdit, setPatentEdit] = React.useState(user.car_plate);
     const [suggestionsList, setSuggestionsList] = useState(null)
     const [selectedModel, setSelectedModel] = useState(null)
-
-    
 
     const searchRef = useRef(null)
     const dropdownController = useRef(null)
@@ -39,7 +39,7 @@ const EditProfileScreen = ({navigation}) => {
         setRoleEdit(role)
 
         setModelEdit(user.car_model)
-        setPatentEdit(user.car_patent)
+        setPatentEdit(user.car_plate)
         setEditable(false)
     }
 
@@ -48,66 +48,66 @@ const EditProfileScreen = ({navigation}) => {
     }
 
     async function getSuggestionsList(q){
-      console.log("entro aca")
-      console.log('getSuggestions', q)
       const response = await getSuggestions(q.toLowerCase())
-      
-      console.log("items ", response)
       
       const suggestions = response.map(r => ({
           id: uuid(), 
-          title: `${r.make} ${r.model} ${r.year}`
-      }))
+          title: `${r.make} ${r.model}`
+          
+      }
+      )
+      )
+      
     
       setSuggestionsList(suggestions)
-      console.log("suggestions ", [...new Set(suggestions)])
-      console.log("la list", suggestionsList)
     }
+
     useEffect((q)=>{
-      getSuggestionsList(q)
+      if (role == 'driver') {
+        getSuggestionsList(q)
+      }
   },[])
+
     const handleSave = async () => {
-            console.log("model ", modelEdit)
             try{
+
+              if (role == 'passenger' && roleEdit == 'driver' && (!selectedModel && patentEdit == '')){
+                Alert.alert("You have to enter your car information.")
+                return;
+              } else if (nameEdit == '' || roleEdit == '' || patentEdit == '' || modelEdit == '') {
+                Alert.alert("Missing fields!")
+                return;
+              }
+
               if(roleEdit == 'passenger') {
-                if(!nameEdit || !roleEdit ){
-                  Alert.alert("Missing fields!")
-                  return
-                } 
+
                 await updateUserInfo(user.uid, user.jwt, nameEdit,  roleEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User response GET", user_response)
                  
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email: user_response.email,
-                  wallet: user_response.wallet,
+                  email: user.email,
                   password: user.password,
                   jwt: user.jwt,
                 }
                 setUser(updateUser)
     
               }else{
-                
+                if (selectedModel) {
+                  setModelEdit(selectedModel.title)
+                }
                
-                if(!nameEdit || !roleEdit || !selectedModel || !patentEdit){
-                  Alert.alert("Missing fields!")
-                  return
-                } 
-                setModelEdit(selectedModel.title)
                 await updateDriverInfo(user.uid, user.jwt, nameEdit,  roleEdit, modelEdit, patentEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User  DRIVER response GET", user_response)
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email: user_response.email,
-                  wallet: user_response.wallet,
+                  email: user.email,
                   password: user.password,
                   jwt: user.jwt,
                   car_model: user_response.car_description,
-                  car_patent: user_response.plate
+                  car_plate: user_response.plate
                 }
                 setUser(updateUser)
               }
@@ -118,7 +118,7 @@ const EditProfileScreen = ({navigation}) => {
               setEditable(false)
     
             }catch (err) {
-              console.log("Error buscando el usuario");
+              console.log("Error buscando el usuario", err.message);
               alert(err.message);
             }
     }
@@ -163,7 +163,7 @@ const EditProfileScreen = ({navigation}) => {
                                     onOpenSuggestionsList={onOpenSuggestionsList}
                                     //  onSubmit={(e) => onSubmitSearch(e.nativeEvent.text)}
                                     textInputProps={
-                                        {placeholder: 'Type 3+ letters car model'}
+                                        {placeholder: 'Type 3+ letters of car model'}
                                         
                                        
                                     }
@@ -185,24 +185,18 @@ const EditProfileScreen = ({navigation}) => {
                  <Feather name="user" size={24} color="grey" />
                   <Text style={{color: 'grey', marginLeft: 5}}>{user.name}</Text>
                 </View>
-                <View  style={styles.passwordStyle}>
-                  <Feather name="mail" size={24} color="grey" />
-                  <Text style={{color: 'grey', marginLeft: 5}}>{user.email}</Text>
-                </View>
-              
                 <Text style={styles.textStyle}>{role}</Text>
-                {(role == 'driver') ? 
-                       <View>
-                       <View  style={styles.passwordStyle}>
-                        <Feather name="truck" size={24} color="grey" />
-                         <Text style={{color: 'grey', marginLeft: 5}}>{user.car_model}</Text>
-                       </View>
-                       <View  style={styles.passwordStyle}>
-                         <Feather name="truck" size={24} color="grey" />
-                         <Text style={{color: 'grey', marginLeft: 5}}>{user.car_patent}</Text>
-                       </View>
-                       
-                       </View>
+                {(roleEdit == 'driver') ? 
+                    <View>
+                      <View  style={styles.passwordStyle}>
+                        <Ionicons name="car-outline" color="grey" size={20}/>
+                        <Text style={{color: 'grey', marginLeft: 5}}>{user.car_model}</Text>
+                      </View>
+                      <View  style={styles.passwordStyle}>
+                        <MaterialCommunityIcons name="smart-card" size={20} color="grey" />
+                        <Text style={{color: 'grey', marginLeft: 5}}>{user.car_plate}</Text>
+                      </View>
+                    </View>
                 :
                 <></>
                 }
@@ -211,14 +205,14 @@ const EditProfileScreen = ({navigation}) => {
              
 
             {editable ? 
-            <View style={{flexDirection:'row', width:'80%', justifyContent:'space-evenly'}}>
-                <Button mode='contained' onPress={handleCancel}>CANCEL</Button>
-                <Button mode='outlined' onPress={handleSave}>SAVE</Button>
-            </View>:
-            <View style={{flexDirection:'row', width:'80%', justifyContent:'space-evenly'}}>
-            <Button mode='contained' onPress={handleBack}>GO BACK</Button>
-            <Button mode='outlined' onPress={()=>{setEditable(true)}}>EDIT</Button>
-        </View>
+              <View style={{flexDirection:'row', width:'80%', justifyContent:'space-evenly'}}>
+                  <Button mode='contained' onPress={handleCancel}>CANCEL</Button>
+                  <Button mode='outlined' onPress={handleSave}>SAVE</Button>
+              </View>:
+              <View style={{flexDirection:'row', width:'80%', justifyContent:'space-evenly'}}>
+                <Button mode='contained' onPress={handleBack}>GO BACK</Button>
+                <Button mode='outlined' onPress={()=>{setEditable(true)}}>EDIT</Button>
+              </View>
             
             }    
         </View>

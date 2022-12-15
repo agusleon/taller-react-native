@@ -1,5 +1,5 @@
 import React, { useContext,useState, useEffect } from 'react';
-import {View, SafeAreaView, StyleSheet, Button, FlatList, ScrollView} from 'react-native';
+import {View, SafeAreaView, StyleSheet, Button, FlatList} from 'react-native';
 import {
   Avatar,
   Title,
@@ -8,48 +8,38 @@ import {
   
 } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
-import {getUserInfo} from '../services/events';
-import { auth } from '../firebase';
-
+import {getUserInfo} from '../services/metrics';
 
 const DriverInfoScreen = ({navigation}) => {
   
-  const {user, role, driver, hasDriver, setHasDriver,  userReviewed} = useContext(FiuberContext);
+  const {user, driver, userReviewed} = useContext(FiuberContext);
   const [rating, setRating] = useState(''); 
   const [comments, setComments] = useState([]);
 
   const getDriverInfo = async () => {  
-      const idTokenResult = await auth.currentUser.getIdTokenResult();
-      
-      try{
-        const response =  await getUserInfo(user.uid,idTokenResult.token)
-        console.log("get info ",response)
-        setRating(response.avg_driver_rating.toFixed(1))
-        setComments(comments.concat(response.driver_ratings.map((r) =>  r.text)))
-        console.log("los comments ",response.driver_ratings.map((r) =>  r.text))
 
-      }catch (err) {console.log("Error en review al driver", err)}     
+      try {
+        const response =  await getUserInfo(driver.id,user.jwt)
+        if (response.avg_driver_rating != null) {
+          setRating(response.avg_driver_rating.toFixed(1))
+        }
+        setComments(response.driver_ratings.map((r) =>  r.text))
+
+      } catch (err) {console.log("Error en review al driver", err)}     
 
   }
-  
+
   useEffect(()=>{
     getDriverInfo()
-},[])
-  //BORRAR LUEGO ES SOLO PARA PROBAR QUE FUNCIONA
-  setHasDriver(true)
+},[userReviewed])
 
   const renderItem=({item})=>{
     return (
-        <View style={styles.listContainer}>
-
           <View style={styles.listCommentsText}>
-          <Ionicons name="chatbox-ellipses-outline" size={20} />
+            <Ionicons name="chatbox-ellipses-outline" size={20} />
             <Text style={styles.text}>{item}</Text>
-            
-        </View>
-        </View>
+          </View>
     )
   }
   const ListEmptyComponent=()=> {
@@ -61,59 +51,37 @@ const DriverInfoScreen = ({navigation}) => {
   }
 
   return (
-    (hasDriver == false) ?
-    <View style={{
-      marginLeft: 20,
-      }}>
-    <Title style={[styles.title, {
-        marginTop:40,
-        marginBottom: 15,
-      }]}>You don't have a driver!
-    </Title></View>:
-    <SafeAreaView style={styles.container}>
-      <TopBar {...navigation} />
-      <View style={styles.userInfoSection}>
-        <View style={{flexDirection: 'row', alignItems:'center', marginTop: 10}}>
-          <Avatar.Image
-            size={100}
-            source={{uri:'https://avatars.dicebear.com/api/big-smile/'+user.uid+'.png'}}
-          />
-          <View style={{marginLeft: 20}}>
-            <Title style={[styles.title, {
-                marginTop:15,
-                marginBottom: 15,
-              }]}>{user.name}
-            </Title>
-          </View>
-        </View>
-        <View >
-          <View style={styles.carDetails}>
-            <Ionicons name="ios-body" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{driver.name}</Text>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.userInfoSection}>
+          <View style={{flexDirection: 'row', alignItems:'center', marginTop: 10}}>
+            <Avatar.Image
+              size={100}
+              source={{uri:'https://avatars.dicebear.com/api/big-smile/'+driver.id+'.png'}}
+            />
+            <View style={{marginLeft: 20}}>
+              <Title style={[styles.title, {
+                  marginTop:15,
+                  marginBottom: 15,
+                }]}>{driver.name}
+              </Title>
+            </View>
           </View>
 
           <View style={styles.carDetails}>
             <Ionicons name="car" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{driver.car_model} - {driver.car_patent}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{driver.car_model} - {driver.car_plate}</Text>
           </View>
-      </View>
 
-    
-
-      <View style={styles.infoBoxWrapper}>
-          
-        
-          <View style={styles.infoBoxDriverDetails}> 
-     
-              <View style={styles.infoBoxDriver}>
-                <Title>{rating}</Title>
-                <Ionicons name="star" color="#777777" size={20}/>
-              </View>
-                <Caption>Rating</Caption>
-          </View>
-              
-             {!(userReviewed)?
-              <View style={styles.rate}>
+          <View style={styles.infoBoxWrapper}>
+            <View style={styles.infoBoxDriverDetails}> 
+                <View style={styles.infoBoxDriver}>
+                  <Title>{rating}</Title>
+                  <Ionicons name="star" color="#777777" size={20}/>
+                </View>
+                  <Caption>Rating</Caption>
+            </View>
+            {!userReviewed &&
+            <View style={styles.rate}>
               <Button
                 title="Review"
                 onPress={() => {navigation.navigate('Review Driver')}}
@@ -121,25 +89,19 @@ const DriverInfoScreen = ({navigation}) => {
                 accessibilityLabel="Review"
               />
             </View>
-            :
-              <></>
-             } 
-            
-          
+            } 
+          </View>
+          <View style={styles.list_big_container}>
+            <FlatList
+              renderItem={renderItem}
+              data={comments}
+              contentContainerStyle={styles.listContainer}
+              ListEmptyComponent={ListEmptyComponent}
+              vertical={false}
+              />
+          </View>
         </View>
-            { <ScrollView >
-                <FlatList
-                  renderItem={renderItem}
-                  data={comments}
-                  contentContainerStyle={styles.listContainer}
-                  ListEmptyComponent={ListEmptyComponent}
-                  vertical={false}
-                  />
-            </ScrollView>}
-       </View>
-          
-   
-    </SafeAreaView>
+      </SafeAreaView>
    
   );
 };
@@ -150,17 +112,21 @@ export default DriverInfoScreen;
   
   const styles = StyleSheet.create({
     container: {
-       
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center'
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    list_big_container: {
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     userInfoSection: {
       paddingHorizontal: 30,
       marginBottom: 20,
       marginTop: 150,
-      
+      backgroundColor: 'white'
     },
     title: {
       fontSize: 24,
@@ -192,7 +158,8 @@ export default DriverInfoScreen;
       borderTopWidth: 1,
       flexDirection: 'row',
       height: 100,
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
+      justifyContent: 'center'
     },
     infoBox: {
       width: '30%',

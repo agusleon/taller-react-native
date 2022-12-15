@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList, ScrollView, Dimensions} from 'react-native';
+import { StyleSheet, View, FlatList, Dimensions} from 'react-native';
 import {Button, Text, TouchableRipple, Modal} from 'react-native-paper';
 import { Entypo } from '@expo/vector-icons';
 import React, {useContext, useState} from 'react';
@@ -7,6 +7,7 @@ import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
 import { estimateFee } from '../services/trips';
 import {getDistance} from 'geolib';
+import { TRIP_INFO } from '../utils/vars';
 
 const {width, height} = Dimensions.get("window");
 
@@ -49,10 +50,10 @@ const FavoriteDestinationsScreen = ({navigation}) => {
             {latitude: currentLocation.latitude, longitude: currentLocation.longitude},
             {latitude: address.latitude, longitude: address.longitude}
         )
-        const fee = await estimateFee(distanceInMeters);
+        const estimated_fee = await estimateFee(distanceInMeters);
 
-        setFee(fee.totalCost.toFixed(6))
-        setStatus(5)
+        setFee(Number(estimated_fee.totalCost.toFixed(6)))
+        setStatus(TRIP_INFO)
         setLoadingFee(false)
     }
 
@@ -108,15 +109,13 @@ const FavoriteDestinationsScreen = ({navigation}) => {
 
 
     return (
-      <View>
-        <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
           <FlatList
             renderItem={renderItem}
             data={favoriteDestinations}
             contentContainerStyle={styles.list_container}
             keyExtractor={(item) => String(item.address)}
             ListEmptyComponent={ListEmptyComponent}/>
-        </ScrollView>
         <Modal visible={modalVisible} onDismiss={hideModal} contentContainerStyle={styles.modal}>
           <Text style={styles.text}>Are you sure you want to delete it?</Text>
           <View style={styles.confirmation_cancel}>
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
       marginTop: 100,
       margin:1,
       height:'100%',
-      width:350,
+      width:'100%',
       backgroundColor:'white',
       justifyContent:'flex-start',
       alignItems:'center'

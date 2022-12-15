@@ -5,12 +5,15 @@ import { Text, TextInput, Button, ActivityIndicator} from 'react-native-paper';
 import {registerUserWithEmailAndPassword} from '../firebase';
 import { FiuberContext } from '../context/FiuberContext';
 import { auth } from '../firebase';
-import { createUser } from '../services/users';
+import { createDriver, createPassenger, createUser } from '../services/users';
 import * as Location from 'expo-location';
 import { getCurrentLocation } from '../services/location';
+import { createWallet } from '../services/payments';
 import { getSuggestions } from '../services/cars';
 import { v4 as uuid } from 'uuid';
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
+import * as Notifications from 'expo-notifications';
+import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
 
@@ -18,12 +21,11 @@ const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.02;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
-export default function RegisterScreen({navigation}) {
+export default function RegisterScreen() {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [username, setUserName] = useState('')
-    const [wallet, setWallet] = useState('')
     const [loading, setLoading] = useState(false)
     const [keyboardOpen, setKeyboardOpen] = useState(false)
     const [confirmedPassword, setConfirmedPassword] = useState('')
@@ -48,30 +50,31 @@ export default function RegisterScreen({navigation}) {
         }
     );
 
-    const {role, setUser, setCurrentLocation, setLoggedIn} = useContext(FiuberContext);
+    const {role, setUser, setCurrentLocation, setLoggedIn, setFocusLocation} = useContext(FiuberContext);
 
     const onOpenSuggestionsList = useCallback(isOpened => {}, [])
     const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
 
     async function getSuggestionsList(q){
-        console.log("entro aca")
         const filterToken = q.toLowerCase()
-        console.log('getSuggestions', q)
-        const response = await getSuggestions(q.toLowerCase())
-        
-        console.log("items ", response)
-        
-        const suggestions = response.map(r => ({
-            id: uuid(), 
-            title: `${r.make} ${r.model} ${r.year}`
-        }))
-        
-        setSuggestionsList(suggestions)
-        console.log("suggestions ", [...new Set(suggestions)])
-        console.log("la list", suggestionsList)
+
+        try {
+            const response = await getSuggestions(q.toLowerCase())
+            
+            const suggestions = response.map(r => ({
+                id: uuid(), 
+                title: `${r.make} ${r.model}`
+            }))
+            
+            setSuggestionsList(suggestions)
+
+        } catch (err) {
+            alert(err.message)
+            console.log("Could not retrieve car model suggestions")
+            return;
         }
-
-
+       
+        }
     
     const handleRegister = async () => {
         setLoading(true);
@@ -81,57 +84,84 @@ export default function RegisterScreen({navigation}) {
             await registerUserWithEmailAndPassword(username, email, password, role);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
+            console.log("Token: ", idTokenResult.token)
+
+            // se crea la wallet
+            await createWallet(idTokenResult.token, user_uid)
+
+
+            //Permiso para enviar notificaciones
+    
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            console.log("final srarus ",finalStatus)
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                console.log("srarus ",status)
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            
+
+            // se busca la current location del user
+            const location = await getCurrentLocation();
+            let { longitude, latitude } = location.coords;
+            let regionName = await Location.reverseGeocodeAsync({
+                longitude,
+                latitude,
+            });
+            const street = (regionName[0].street)
+            const streetNumber = regionName[0].streetNumber
+            const city = regionName[0].city
+            const description = `${street} ${streetNumber}, ${city}`
+            const address = {
+                description: description,
+                longitude:location.coords.longitude,
+                latitude:location.coords.latitude,
+                longitudeDelta:  LONGITUDE_DELTA,
+                latitudeDelta:  LATITUDE_DELTA
+            }
+            console.log(address)
             
             // se crea el usuario en firestore
             if(role == 'passenger'){
-                const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token);
 
-                // se busca la current location del user
-                const location = await getCurrentLocation();
-                let { longitude, latitude } = location.coords;
-                let regionName = await Location.reverseGeocodeAsync({
-                    longitude,
-                    latitude,
-                });
-                const street = (regionName[0].street)
-                const streetNumber = regionName[0].streetNumber
-                const city = regionName[0].city
-                const description = `${street} ${streetNumber}, ${city}`
-                const address = {
-                    description: description,
-                    longitude:location.coords.longitude,
-                    latitude:location.coords.latitude,
-                    longitudeDelta:  LONGITUDE_DELTA,
-                    latitudeDelta:  LATITUDE_DELTA
+                const user_response = await createPassenger(username, role, user_uid, idTokenResult.token);
+                const new_user = {
+                    uid: user_response.uid,
+                    name: user_response.name,
+                    email,
+                    password: password,
+                    jwt: idTokenResult.token,
                 }
-                setCurrentLocation(address);
+
+                setUser(new_user)
                 
-                // se guarda el usuario en el context (su rol ya se guardo cuando eligio como registrarse)
-                const user = {
-                    uid: user_response.uid,
-                    name: user_response.name,
-                    email: user_response.email,
-                    wallet: user_response.wallet,
-                    password: password,
-                    jwt: idTokenResult.token,
-                }
-                setUser(user)
             }else{
-                const user_response = await createUser(username, wallet, role, user_uid, idTokenResult.token, selectedItem, patent);
-                const user = {
+
+                const user_response = await createDriver(username, role, user_uid, idTokenResult.token, selectedItem.title, patent);
+                const new_user = {
                     uid: user_response.uid,
                     name: user_response.name,
-                    email: user_response.email,
-                    wallet: user_response.wallet,
+                    email,
                     password: password,
                     jwt: idTokenResult.token,
-                    car_model: user_response.car_description.title,
-                    car_patent: user_response.patent
+                    car_model: user_response.car_description,
+                    car_plate: user_response.plate
                 }
-                setUser(user)
+
+                setUser(new_user)
 
             }
+
+            await postEvent('REGISTER', idTokenResult.token);
             
+            setCurrentLocation(address)
+            setFocusLocation(address)
+
             // se cambia el contexto
             setLoggedIn(true)
             setLoading(false)
@@ -139,13 +169,16 @@ export default function RegisterScreen({navigation}) {
         } catch (error) {
             console.log(error);
             alert(error.message);
+            setLoading(false)
             return;
         }
         
     }
 
     useEffect((q)=>{
-        getSuggestionsList(q)
+        if (role == 'driver') {
+            getSuggestionsList(q)
+        }
     },[])
 
     if(loading){
@@ -177,53 +210,40 @@ export default function RegisterScreen({navigation}) {
                                 onChangeText={email => setEmail(email)}
                                 left={<TextInput.Icon icon="at" />}
                                 />
-                            <TextInput
-                                label="Wallet"
-                                value={wallet}
-                                autoCapitalize='none'
-                                onChangeText={wallet => setWallet(wallet)}
-                                left={<TextInput.Icon icon="bitcoin" />}
-                            />
-                            {(role=='passenger') ? 
-                                <></>
-                            :
-                            <View>
-                            <TextInput
-                                label="Patente"
-                                value={patent}
-                                autoCapitalize='none'
-                                onChangeText={patent => setPatent(patent)}
-                                left={<TextInput.Icon icon="car" />}
-                            />
-                            <AutocompleteDropdown
-                                    ref={searchRef}
-                                    controller={controller => {
-                                        dropdownController.current = controller
-                                      }}
-                                    direction={Platform.select({ ios: 'down' })}
-                                    onClear={onClearPress}
-                                    // initialValue={'1'}
+                            {(role=='driver') && 
+                                <View>
+                                    <AutocompleteDropdown
+                                            ref={searchRef}
+                                            controller={controller => {
+                                                dropdownController.current = controller
+                                            }}
+                                            direction={Platform.select({ ios: 'down' })}
+                                            onClear={onClearPress}
+                                            dataSet={suggestionsList}
+                                            onChangeText={getSuggestionsList}
+                                            onSelectItem={item => {
+                                                item && setSelectedItem(item)
+                                            }}
+                                            debounce={600}
+                                            suggestionsListMaxHeight={Dimensions.get('window').height * 0.4}
+                                            onOpenSuggestionsList={onOpenSuggestionsList}
+                                            textInputProps={
+                                                {placeholder: 'Type 3+ letters car model'}
+                                                
+                                            
+                                            }
+                                    />
+                                    <TextInput
+                                        label="Patente"
+                                        value={patent}
+                                        autoCapitalize='none'
+                                        onChangeText={patent => setPatent(patent)}
+                                        left={<TextInput.Icon icon="car" />}
+                                    />
                                     
-                                    dataSet={suggestionsList}
-                                    onChangeText={getSuggestionsList}
-                                    onSelectItem={item => {
-                                        item && setSelectedItem(item)
-                                      }}
-                                    debounce={600}
-                                    suggestionsListMaxHeight={Dimensions.get('window').height * 0.4}
-                                    onOpenSuggestionsList={onOpenSuggestionsList}
-                                    //  onSubmit={(e) => onSubmitSearch(e.nativeEvent.text)}
-                                    textInputProps={
-                                        {placeholder: 'Type 3+ letters car model'}
-                                        
-                                       
-                                    }
-                            />
-                            </View>
-                            
+                                </View>
                             }
 
-                                
                             <TextInput
                                 label="Password"
                                 value={password}
@@ -268,7 +288,7 @@ const styles = StyleSheet.create({
     },
     small_container_with_keyboard: {
         flexDirection: 'column',
-        height: '90%',
+        height: '100%',
         width: '80%',
         justifyContent: 'space-evenly',
     },

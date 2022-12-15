@@ -10,10 +10,9 @@ const ContextProvider = ({children}) => {
         uid:'',
         email:'',
         password:'',
-        wallet:'',
         jwt:'',
         car_model: '',
-        car_patent: ''
+        car_plate: ''
     }
 
     const address_state = {
@@ -30,15 +29,7 @@ const ContextProvider = ({children}) => {
         car_model: '',
         car_plate: '',
         name: '',
-    }
-
-    const trip_state = {
-        id: '',
-        destination: false,
-        status: 0, // CHECK STATUS
-        fee: 0,
-        driver: false,
-        passenger: false
+        trip_id: ''
     }
 
     const [gotDriver, setGotDriver] = React.useState(false);
@@ -49,7 +40,7 @@ const ContextProvider = ({children}) => {
     const [role, setRole] = React.useState('');
     const [user, setUser] = React.useState(user_state);
     const [favoriteDestinations, setFavoriteDestinations] = React.useState([]);
-    const [trip, setTrip] = React.useState(trip_state);
+    const [passenger, setPassenger] = React.useState(false);
     const [status, setStatus] = React.useState(0);
     const [destination, setDestination] = React.useState(address_state);
     const [currentLocation, setCurrentLocation] = React.useState(address_state);
@@ -57,9 +48,9 @@ const ContextProvider = ({children}) => {
     const [driverLocation, setDriverLocation] = React.useState(false);
     const [onGoing, setOnGoing] = React.useState(false);
     const [focusLocation, setFocusLocation] = React.useState()
-    const [hasDriver, setHasDriver] = React.useState(false);
     const [hasPassenger, setHasPassenger] = React.useState(false);
     const [userReviewed, setUserReviewed] = React.useState(false);
+    const [intervalID, setIntervalID] = React.useState(null);
    
 
     // STATUS
@@ -90,7 +81,6 @@ const ContextProvider = ({children}) => {
             user, setUser,
             favoriteDestinations, setFavoriteDestinations,
             loadingFee, setLoadingFee,
-            trip, setTrip,
             showDirections, setShowDirections,
             currentLocation, setCurrentLocation,
             fee, setFee,
@@ -101,10 +91,10 @@ const ContextProvider = ({children}) => {
             driverLocation, setDriverLocation,
             focusLocation, setFocusLocation,
             onGoing, setOnGoing,
-            hasDriver, setHasDriver,
+            passenger, setPassenger,
             hasPassenger, setHasPassenger,
             userReviewed, setUserReviewed,
-            
+            intervalID, setIntervalID
         }}>
             {children}
         </FiuberContext.Provider>

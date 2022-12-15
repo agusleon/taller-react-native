@@ -1,93 +1,139 @@
-import { StyleSheet, View, FlatList, ScrollView} from 'react-native';
-import {Button, Text, TouchableRipple, Modal} from 'react-native-paper';
-import { Entypo } from '@expo/vector-icons';
-import React, {useContext, useEffect, useState} from 'react';
-import { getFavoriteDestinations } from '../services/trips';
+import { StyleSheet, View, FlatList} from 'react-native';
+import {Button, Text} from 'react-native-paper';
+import React, {useContext, useEffect, useState, useRef} from 'react';
 import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
-import { estimateFee } from '../services/trips';
-import {getDistance} from 'geolib';
+import { getUser } from '../services/users';
+import { getAvailableTrips, updateTripStatus } from '../services/trips';
+import { AWAITING_DRIVER, BEGIN } from '../utils/vars';
+import { registerForPushNotificationsAsync } from '../services/notifications';
 
 const TripsAvailableScreen = ({navigation}) => {
 
-    const {user} = useContext(FiuberContext);
-    const [trips, setTrips] = useState(null);
-    // const showModal = () => setModalVisible(true);
-    // const hideModal = () => setModalVisible(false);
+    const {user, focusLocation, setPassenger, setDestination, setShowDirections, setStatus, status} = useContext(FiuberContext);
+    const [trips, setTrips] = useState([]);
+    const notificationListener = useRef();
+    const [notification, setNotification] = useState(false);
 
 
     const ListEmptyComponent=()=> {
       return (
         <View>
-          <Text>No destinations to show.</Text>
+          <Text>No trips available.</Text>
         </View>
       );
+    }
+
+    const startTrip = async (item) => {
+      console.log("Taking trip!", JSON.stringify(item))
+
+      try {
+        const user_response = await getUser(item.user_id, user.jwt);
+
+        if (user_response.uid) {
+
+          try {
+
+            const response = await updateTripStatus(user.jwt, item.trip_id, AWAITING_DRIVER);
+
+            if (response.trip_id) {
+
+              const passenger = {
+                id: item.user_id,
+                name: user_response.name,
+                trip_id: item.trip_id,
+                source_address: item.source_address,
+                source_latitude: item.source_latitude,
+                source_longitude: item.source_longitude,
+                gotPassenger: true
+              }
+            
+              const destination = {
+                address: item.destination_address,
+                latitude: item.destination_latitude,
+                longitude: item.destination_longitude,
+              }
+            
+              setStatus(response.trip_state)
+              setPassenger(passenger)
+              setDestination(destination)
+              setShowDirections(true)
+
+            } else {
+                alert("There was a problem gathering passenger information.")
+                console.log("There was a problem gathering passenger information: ", JSON.stringify(response))
+            }
+
+          } catch(err) {
+              alert("There was a problem gathering passenger information.")
+              console.log("There was a problem gathering passenger information: ", err.message)
+          }
+
+        } else {
+
+            alert("There was a problem gathering passenger information.")
+            console.log("There was a problem gathering passenger information: ", JSON.stringify(user_response))
+
+        }
+
+      } catch (err) {
+        alert("There was a problem gathering passenger information.")
+        console.log("There was a problem gathering passenger information: ", err.message)
+      }
+
+      navigation.navigate('Home')
     }
     
     const fetchAvailableTrips = async () => {
         try {
             console.log("Searching for trips")
+            const trips = await getAvailableTrips(user.jwt);
+         
+            if(trips.length>0 && !notification){
+              registerForPushNotificationsAsync("New notification", "You have new trips available", notificationListener)
+              setNotification(true)
+            }
+
+            setTrips(trips)
+            
         } catch (e) {
           console.log(e);
         }
       }
     
       useEffect(() => {
-        fetchAvailableTrips();
-      }, []);
+        if (status == BEGIN) {
+          fetchAvailableTrips();
+    }
+
+      }, [focusLocation]);
 
     const renderItem=({item})=>{
       return (
           <View style={styles.destination_container}>
 
             <View style={styles.title_container}>
-              <Text style={styles.title}>{item.custom_name}</Text>
-              <TouchableRipple onPress={() => { setNameToDelete(item.custom_name)
-                                                showModal()}}>
-                <Entypo name="cross" size={24} color="black" />
-              </TouchableRipple>
+              <Text style={styles.title}>To:</Text>
+              <Text>{item.destination_address}</Text>
             </View>
-              <Text style={styles.content}>{item.address}</Text>
-            <Button style={styles.trip_button} mode='contained' onPress={() => startTrip(item)}>Go</Button>
+            <View>
+              <Text style={styles.title}>From:</Text>
+              <Text>{item.source_address}</Text>
+            </View>
+            <Button style={styles.trip_button} mode='contained' onPress={() => startTrip(item)}>Take</Button>
           </View>
       )
     }
 
-    useEffect(() => {
-        async function fetchDestination(){
-          const fetched_destinations = await getFavoriteDestinations(user.jwt);
-          if (!fetched_destinations.detail){
-            console.log("Destinations customs:",fetched_destinations);
-            setFavoriteDestinations(fetched_destinations);
-            return;
-          }
-        }
-
-        fetchDestination();
-      }, [])
-
 
     return (
-      <View>
-        <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
           <FlatList
             renderItem={renderItem}
-            data={favoriteDestinations}
+            data={trips}
             contentContainerStyle={styles.list_container}
-            keyExtractor={(item) => String(item.address)}
+            keyExtractor={(item) => String(item.trip_id)}
             ListEmptyComponent={ListEmptyComponent}/>
-        </ScrollView>
-        <Modal visible={modalVisible} onDismiss={hideModal} contentContainerStyle={styles.modal}>
-          <Text style={styles.text}>Are you sure you want to delete it?</Text>
-          <View style={styles.confirmation_cancel}>
-              <Button mode="outlined" onPress={handleDelete} style={styles.confirmation_button}>
-                yes
-              </Button>
-              <Button mode="contained" onPress={handleCancelDelete} style={styles.confirmation_button}>
-                no
-              </Button>
-          </View>
-        </Modal>
         <TopBar {...navigation} />
       </View>
 
@@ -103,7 +149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   title_container:{
-    flexDirection:'row',
+    flexDirection:'column',
     justifyContent:'space-between'
   },
   modal: {
@@ -146,7 +192,7 @@ const styles = StyleSheet.create({
   },
   title: {
       fontWeight: 'bold',
-      fontSize: 20,
+      fontSize: 15,
       color: '#20315f',
       marginLeft:10
   },
@@ -156,15 +202,11 @@ const styles = StyleSheet.create({
     marginLeft:10
   },
   trip_button: {
-      width:'20%',
+      width:'40%',
       shadowColor:'black',
       shadowOffset:{width:2,height:2},
       shadowOpacity: 0.5,
       elevation:4,
-      marginLeft:250,
       borderRadius:8,
   },
-  text:{
-    fontWeight:'bold'
-  }
 })
