@@ -60,7 +60,6 @@ const EditProfileScreen = ({navigation}) => {
       
     
       setSuggestionsList(suggestions)
-     
     }
 
     useEffect((q)=>{
@@ -70,44 +69,41 @@ const EditProfileScreen = ({navigation}) => {
   },[])
 
     const handleSave = async () => {
-      
             try{
+
+              if (role == 'passenger' && roleEdit == 'driver' && (!selectedModel && patentEdit == '')){
+                Alert.alert("You have to enter your car information.")
+                return;
+              } else if (nameEdit == '' || roleEdit == '' || patentEdit == '' || modelEdit == '') {
+                Alert.alert("Missing fields!")
+                return;
+              }
+
               if(roleEdit == 'passenger') {
-                if(!nameEdit || !roleEdit ){
-                  Alert.alert("Missing fields!")
-                  return
-                } 
+
                 await updateUserInfo(user.uid, user.jwt, nameEdit,  roleEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User response GET", user_response)
-               
                  
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
                   email: user.email,
-                  wallet: user_response.wallet,
                   password: user.password,
                   jwt: user.jwt,
                 }
                 setUser(updateUser)
     
               }else{
-                
+                if (selectedModel) {
+                  setModelEdit(selectedModel.title)
+                }
                
-                if(!nameEdit || !roleEdit || !selectedModel || !patentEdit){
-                  Alert.alert("Missing fields!")
-                  return
-                } 
-                setModelEdit(selectedModel.title)
                 await updateDriverInfo(user.uid, user.jwt, nameEdit,  roleEdit, modelEdit, patentEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-    
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
                   email: user.email,
-                  wallet: user_response.wallet,
                   password: user.password,
                   jwt: user.jwt,
                   car_model: user_response.car_description,
@@ -122,7 +118,7 @@ const EditProfileScreen = ({navigation}) => {
               setEditable(false)
     
             }catch (err) {
-              console.log("Error buscando el usuario");
+              console.log("Error buscando el usuario", err.message);
               alert(err.message);
             }
     }
@@ -190,7 +186,7 @@ const EditProfileScreen = ({navigation}) => {
                   <Text style={{color: 'grey', marginLeft: 5}}>{user.name}</Text>
                 </View>
                 <Text style={styles.textStyle}>{role}</Text>
-                {(role == 'driver') ? 
+                {(roleEdit == 'driver') ? 
                     <View>
                       <View  style={styles.passwordStyle}>
                         <Ionicons name="car-outline" color="grey" size={20}/>

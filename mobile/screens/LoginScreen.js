@@ -8,6 +8,8 @@ import { getCurrentLocation } from '../services/location';
 import * as Location from 'expo-location';
 import { getFavoriteDestinations, updateDriverPosition } from '../services/trips';
 import * as Notifications from 'expo-notifications';
+import { postEvent } from '../services/events';
+
 const {width, height} = Dimensions.get("window");
 
 const ASPECT_RATIO = width / height;
@@ -22,7 +24,7 @@ export default function LoginScreen({navigation}) {
     const [keyboardOpen, setKeyboardOpen] = useState(false);
     const [existingUser, setExistingUser] = useState(true);
 
-    const {setLoggedIn, setRole, role, setCurrentLocation, setUser, currentLocation, setFavoriteDestinations, user, setFocusLocation} = useContext(FiuberContext);
+    const {setLoggedIn, setRole, role, setCurrentLocation, setUser, focusLocation, setFavoriteDestinations, user, setFocusLocation} = useContext(FiuberContext);
 
     Keyboard.addListener(
         'keyboardDidShow',
@@ -47,7 +49,7 @@ export default function LoginScreen({navigation}) {
             await logInWithEmailAndPassword(email, password);
             const user_uid = auth.currentUser.uid;
             const idTokenResult = await auth.currentUser.getIdTokenResult();
-            console.log(idTokenResult.token)
+            console.log("Token:", idTokenResult.token)
 
             // se busca al usuario
             const user_response = await getUser(user_uid, idTokenResult.token);
@@ -98,8 +100,7 @@ export default function LoginScreen({navigation}) {
                 latitudeDelta:  LATITUDE_DELTA
             }
             setCurrentLocation(address);
-            setFocusLocation(address)
-            console.log(currentLocation)
+            setFocusLocation(address);
             
             if (user_response.roles[0] == 'passenger') {
 
@@ -111,6 +112,7 @@ export default function LoginScreen({navigation}) {
                     email,
                     jwt: idTokenResult.token,
                 }
+                
                 setUser(current_user)
             } else {
                 const current_user = {
@@ -124,7 +126,9 @@ export default function LoginScreen({navigation}) {
                 }
                 setUser(current_user)
             }
-           
+  
+            await postEvent('LOGIN', idTokenResult.token);
+
             setRole(user_response.roles[0])
 
             setLoggedIn(true)
@@ -162,7 +166,7 @@ export default function LoginScreen({navigation}) {
                 } else if (role == "driver") {
                     try {
                         console.log("Updating position from login screen")
-                        const response = await updateDriverPosition(currentLocation, user.jwt)
+                        const response = await updateDriverPosition(focusLocation, user.jwt)
                         if (!response.latitude) {
                             console.log("Could not update position");
                         }

@@ -50,9 +50,8 @@ const makeDeposit = async (trip_id, jwt) => {
                 'Content-Type': 'application/json',
               },
         });
-    return await response.json();
-
-}
+    return response; 
+}   
 
 const makeWithdrawal = async (trip_id, jwt) => {
 

@@ -13,9 +13,6 @@ const RateUserScreen = ({navigation}) => {
   const {driver, passenger, role, setUserReviewed, userReviewed} = useContext(FiuberContext);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-  
-
-  console.log("El rating ", rating)
 
   const sendReview = async () => {  
        if(comment == ''){
@@ -25,14 +22,15 @@ const RateUserScreen = ({navigation}) => {
        if(role == 'passenger'){
              //llamo a la api para mandarle el rating 
              const idTokenResult = await auth.currentUser.getIdTokenResult();
-             console.log("idtoken ",driver.id)
              try {
-              //cambiar a driver.id
+
                await rateDriver(driver.id, idTokenResult.token, rating, comment);
                setUserReviewed(true);
                Alert.alert("successfully submitted!")
-               navigation.navigate('Driver Info')
-             } catch (err) {console.log("Error en review al driver", err)}     
+               navigation.navigate('Driver Info Screen')
+              } catch (err) {
+                console.log("Error en review al driver", err)
+              }     
        }else{
             //llamo a la api para mandarle el rating 
             const idTokenResult = await auth.currentUser.getIdTokenResult();
@@ -41,7 +39,9 @@ const RateUserScreen = ({navigation}) => {
               setUserReviewed(true);
               Alert.alert("successfully submitted!")
               navigation.navigate('Passenger Info Screen')
-            } catch (err) {console.log("Error en review al passenger", err)}     
+            } catch (err) {
+              console.log("Error en review al passenger", err)
+            }     
        }
    
    

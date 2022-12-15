@@ -50,6 +50,7 @@ const ContextProvider = ({children}) => {
     const [focusLocation, setFocusLocation] = React.useState()
     const [hasPassenger, setHasPassenger] = React.useState(false);
     const [userReviewed, setUserReviewed] = React.useState(false);
+    const [intervalID, setIntervalID] = React.useState(null);
    
 
     // STATUS
@@ -93,7 +94,7 @@ const ContextProvider = ({children}) => {
             passenger, setPassenger,
             hasPassenger, setHasPassenger,
             userReviewed, setUserReviewed,
-            
+            intervalID, setIntervalID
         }}>
             {children}
         </FiuberContext.Provider>

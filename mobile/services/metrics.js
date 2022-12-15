@@ -10,7 +10,6 @@ const rateDriver = async ( uid, jwt, rating, comment) => {
     
       console.log("Sending this body rating: ",body);
       const url = URL_USUARIOS+'/ratings/driver/';
-      console.log(url)
       const bearer = 'Bearer '+jwt;
       try {
         const response = await fetch(url,
@@ -24,7 +23,6 @@ const rateDriver = async ( uid, jwt, rating, comment) => {
               },
         });
         const json = await response.json();
-        console.log("el RATING response", json);
         return json;
       } catch (err) {
         console.error(err);
@@ -43,7 +41,7 @@ const ratePassenger = async ( uid, jwt, rating, comment) => {
   
     console.log("Sending this body rating: ",body);
     const url = URL_USUARIOS+'/ratings/passenger/';
-    console.log(url)
+
     const bearer = 'Bearer '+jwt;
     try {
       const response = await fetch(url,
@@ -57,7 +55,6 @@ const ratePassenger = async ( uid, jwt, rating, comment) => {
             },
       });
       const json = await response.json();
-      console.log("el RATING response", json);
       return json;
     } catch (err) {
       console.error(err);
@@ -105,7 +102,6 @@ const getTripCount = async (uid, jwt, role) => {
           },
     });
   const json = await response.json();
-  console.log("response del get info ", json)
   return json;
 
 }

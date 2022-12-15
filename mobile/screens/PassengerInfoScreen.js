@@ -14,7 +14,7 @@ import {getUserInfo} from '../services/metrics';
 
 const PassengerInfoScreen= ({navigation}) => {
   
-  const {user, passenger, userReviewed, setPassenger} = useContext(FiuberContext);
+  const {user, passenger, userReviewed} = useContext(FiuberContext);
   const [rating, setRating] = useState(''); 
   const [comments, setComments] = useState([]);
 
@@ -22,20 +22,13 @@ const PassengerInfoScreen= ({navigation}) => {
       
       try{
         const response =  await getUserInfo(passenger.id, user.jwt)
-        //console.log("get info ",response)
         if (response.avg_passenger_rating != null) {
           setRating(response.avg_passenger_rating.toFixed(1))
         }
-        setComments(comments.concat(response.passenger_ratings.map((r) =>  r.text)))
-        console.log("los comments ",response.passenger_ratings.map((r) =>  r.text))
+        setComments(response.passenger_ratings.map((r) =>  r.text))
 
       }catch (err) {console.log("Error en review al passenger", err.message)}     
 
-  }
-
-  const handleFinish = () => {
-    setPassenger(false)
-    navigation.navigate('Home')
   }
       
   useEffect(()=>{
@@ -44,13 +37,9 @@ const PassengerInfoScreen= ({navigation}) => {
 
   const renderItem=({item})=>{
     return (
-        <View style={styles.listContainer}>
-
-          <View style={styles.listCommentsText}>
+        <View style={styles.listCommentsText}>
           <Ionicons name="chatbox-ellipses-outline" size={20} />
-            <Text style={styles.text}>{item}</Text>
-            
-        </View>
+          <Text style={styles.text}>{item}</Text>   
         </View>
     )
   }
@@ -120,7 +109,6 @@ const PassengerInfoScreen= ({navigation}) => {
             ListEmptyComponent={ListEmptyComponent}
             vertical={false}
             />
-            <Button onPress={handleFinish}>FINISH</Button>
       </View>
           
   

@@ -31,8 +31,6 @@ const createDefaultDestination = async (jwt, address, longitude, latitude) => {
 
   const createCustomDestination = async (jwt, address, name, latitude, longitude) => {
 
-    console.log(name)
-
     const body = JSON.stringify({
         address,
         custom_name:name,
@@ -64,7 +62,7 @@ const createDefaultDestination = async (jwt, address, longitude, latitude) => {
   const deleteCustomDestination = async (jwt, name) => {
 
     const url = URL_VIAJES + '/destinations/name/?destination_name=' + name;
-    console.log(url)
+
     const bearer = 'Bearer '+jwt;
     try {
         const response = await fetch(url,
