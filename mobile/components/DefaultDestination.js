@@ -10,31 +10,66 @@ const DefaultDestination = () => {
     const address_default = {
         description: '',
         latitude: 0,
-        longitude: 0
+        longitude: 0,
+        latitudeDelta: 0.09,
+        longitudDelta: 0.04
+
     }
 
     const [address, setAddres] = useState(address_default);
-    const {setCurrentDestination, setDefaultDestination, setHasDefaultDestination, user} = useContext(FiuberContext);
+    const {defaultDestination, setCurrentDestination,  setHasDefaultDestination, user} = useContext(FiuberContext);
 
     const handleSave = async () => {
         try {
-            const destination = await createDefaultDestination(user.jwt, address.description, address.longitude, address.latitude);
-            console.log("Se creo la default destination correctamente: ",destination);
-            setHasDefaultDestination(true);
-            setCurrentDestination(destination);
-            setDefaultDestination(destination);
+            const destination = await createDefaultDestination(user.jwt, address.description, address.latitude,address.longitude );
+            
+            console.log("en default destination destination ", destination)
+            
+             const d =  {
+                description: destination.address,
+                latitude: destination.latitude,
+                longitude: destination.longitude,
+            
+            } 
+          
+            console.log("default desti ", defaultDestination)
+            console.log("curren desti que quiero ", address)
+            console.log("la destination devuelta por la api: ", d)
+            setCurrentDestination(d);
+            setHasDefaultDestination(true)
+          
+           
+           
         } catch (err) {
-            console.log("No se pudo crear la default destination del usuario");
+            
+            if(err.includes("has previously registered an address")){
+                setHasDefaultDestination(true) 
+                const d =  {
+                    description: address.description,
+                    latitude: address.latitude,
+                    longitude: address.longitude,
+
+                } 
+                setCurrentDestination(d)
+            }
+            alert("Tenes que ingresar una direccion!")
+            setHasDefaultDestination(false)
+            console.log("No se pudo crear la default destination del usuario, err: ",err);
+            
         }
     }
 
     const onPlaceSelected = (details) => {
+        console.log("estos son los details destination" ,details)
         const address = {
             description: details.formatted_address,
             latitude: details.geometry.location.lat,
             longitude: details.geometry.location.lng
         }
+
         setAddres(address)
+      
+
     }
 
     return (

@@ -5,46 +5,96 @@ const FiuberContext = React.createContext();
 
 const ContextProvider = ({children}) => {
 
-    const userAuth = {
+    const user_state = {
         name:'',
         uid:'',
         email:'',
         password:'',
-        wallet:'',
         jwt:'',
+        car_model: '',
+        car_plate: ''
     }
 
-    const [destinations, setDestinations] = React.useState([
-        {
-          address:'',
-          custom_name:'',
-          latitude: 0,
-          longitude: 0
-        }
-      ]);
-
-    const address = {
+    const address_state = {
         description:'',
         longitude:0,
-        latitude:0
+        latitude:0,
+        latitude_delta: 0,
+        longitude_delta: 0
+    
     }
 
+    const driver_state = {
+        id: '',
+        car_model: '',
+        car_plate: '',
+        name: '',
+        trip_id: ''
+    }
+
+    const [gotDriver, setGotDriver] = React.useState(false);
     const [loggedIn, setLoggedIn] = React.useState(false);
+    const [showDirections, setShowDirections] = React.useState(false);
+    const [loadingFee, setLoadingFee] = React.useState(false);
+    const [fee, setFee] = React.useState(0);
     const [role, setRole] = React.useState('');
-    const [user, setUser] = React.useState(userAuth);
-    const [currentDestination, setCurrentDestination] = React.useState(address);
-    const [defaultDestination, setDefaultDestination] = React.useState(address);
-    const [hasDefaultDestination, setHasDefaultDestination] = React.useState(false);
+    const [user, setUser] = React.useState(user_state);
+    const [favoriteDestinations, setFavoriteDestinations] = React.useState([]);
+    const [passenger, setPassenger] = React.useState(false);
+    const [status, setStatus] = React.useState(0);
+    const [destination, setDestination] = React.useState(address_state);
+    const [currentLocation, setCurrentLocation] = React.useState(address_state);
+    const [driver, setDriver] = React.useState(driver_state);
+    const [driverLocation, setDriverLocation] = React.useState(false);
+    const [onGoing, setOnGoing] = React.useState(false);
+    const [focusLocation, setFocusLocation] = React.useState()
+    const [hasPassenger, setHasPassenger] = React.useState(false);
+    const [userReviewed, setUserReviewed] = React.useState(false);
+    const [intervalID, setIntervalID] = React.useState(null);
+   
+
+    // STATUS
+
+    // 0: WHERE TO?
+    // 1: SEARCHING DRIVER
+    // 2: AWAITING DRIVER
+    // 3: ON GOING TRIP
+    // 4: FINISHED TRIP
+    // 5: INFO TRIP
+    // 6: CREATING TRIP
+
+    
+    // const [tripInfo, setTripInfo] = React.useState(false);
+    // const [tripStatus, setTripStatus] = React.useState('')
+    // const [tripId, setTripId] = React.useState(null);
+    // const [estimatedFee, setEstimatedFee] = React.useState(null);
+    // const [currentLocation, setCurrentLocation] = React.useState(address_state);
+    // const [driverLocation, setDriverLocation] = React.useState(null);
+    // const [destination, setDestination] = React.useState(address_state);
+    // const [driver, setDriver] = React.useState(driver_state)
+    
 
     return(
         <FiuberContext.Provider value={{
             role,setRole,
             loggedIn, setLoggedIn,
             user, setUser,
-            currentDestination, setCurrentDestination,
-            defaultDestination, setDefaultDestination,
-            hasDefaultDestination, setHasDefaultDestination,
-            destinations, setDestinations
+            favoriteDestinations, setFavoriteDestinations,
+            loadingFee, setLoadingFee,
+            showDirections, setShowDirections,
+            currentLocation, setCurrentLocation,
+            fee, setFee,
+            destination, setDestination,
+            status, setStatus,
+            driver, setDriver,
+            gotDriver, setGotDriver,
+            driverLocation, setDriverLocation,
+            focusLocation, setFocusLocation,
+            onGoing, setOnGoing,
+            passenger, setPassenger,
+            hasPassenger, setHasPassenger,
+            userReviewed, setUserReviewed,
+            intervalID, setIntervalID
         }}>
             {children}
         </FiuberContext.Provider>
