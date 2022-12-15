@@ -21,7 +21,6 @@ const DriverInfoScreen = ({navigation}) => {
 
       try {
         const response =  await getUserInfo(driver.id,user.jwt)
-
         if (response.avg_driver_rating != null) {
           setRating(response.avg_driver_rating.toFixed(1))
         }

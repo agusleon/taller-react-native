@@ -21,12 +21,12 @@ const ProfileScreen = ({navigation}) => {
     const [rating, setRating] = useState(false);
     const [tripcount, setTripCount] = useState(0);
 
+   
     const fetchInfo = async () => {  
 
       try {
         const response =  await getUserInfo(user.uid,user.jwt)
         const response_tripcount = await getTripCount(user.uid, user.jwt, role)
-
         setTripCount(response_tripcount)
         if (role == 'passenger'){
           if (response.avg_passenger_rating != null) {
@@ -43,7 +43,7 @@ const ProfileScreen = ({navigation}) => {
           console.log("Couldn't get metrics", err.message)}     
 
   }
-  
+
     useEffect(() => {
         fetchInfo();
     }, [user, role]);

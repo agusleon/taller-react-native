@@ -52,11 +52,14 @@ const EditProfileScreen = ({navigation}) => {
       
       const suggestions = response.map(r => ({
           id: uuid(), 
-          title: `${r.make} ${r.model} ${r.year}`
-      }))
+          title: `${r.make} ${r.model}`
+          
+      }
+      )
+      )
+      
     
       setSuggestionsList(suggestions)
-
     }
 
     useEffect((q)=>{
@@ -160,7 +163,7 @@ const EditProfileScreen = ({navigation}) => {
                                     onOpenSuggestionsList={onOpenSuggestionsList}
                                     //  onSubmit={(e) => onSubmitSearch(e.nativeEvent.text)}
                                     textInputProps={
-                                        {placeholder: 'Type 3+ letters car model'}
+                                        {placeholder: 'Type 3+ letters of car model'}
                                         
                                        
                                     }

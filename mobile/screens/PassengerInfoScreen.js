@@ -22,7 +22,6 @@ const PassengerInfoScreen= ({navigation}) => {
       
       try{
         const response =  await getUserInfo(passenger.id, user.jwt)
-
         if (response.avg_passenger_rating != null) {
           setRating(response.avg_passenger_rating.toFixed(1))
         }

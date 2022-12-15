@@ -12,6 +12,7 @@ import { createWallet } from '../services/payments';
 import { getSuggestions } from '../services/cars';
 import { v4 as uuid } from 'uuid';
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown';
+import * as Notifications from 'expo-notifications';
 import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
@@ -55,7 +56,6 @@ export default function RegisterScreen() {
     const onClearPress = useCallback(() => {setSuggestionsList(null) }, [])
 
     async function getSuggestionsList(q){
-
         const filterToken = q.toLowerCase()
 
         try {
@@ -63,7 +63,7 @@ export default function RegisterScreen() {
             
             const suggestions = response.map(r => ({
                 id: uuid(), 
-                title: `${r.make} ${r.model} ${r.year}`
+                title: `${r.make} ${r.model}`
             }))
             
             setSuggestionsList(suggestions)
@@ -88,6 +88,23 @@ export default function RegisterScreen() {
 
             // se crea la wallet
             await createWallet(idTokenResult.token, user_uid)
+
+
+            //Permiso para enviar notificaciones
+    
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            console.log("final srarus ",finalStatus)
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                console.log("srarus ",status)
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            
 
             // se busca la current location del user
             const location = await getCurrentLocation();

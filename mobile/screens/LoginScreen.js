@@ -7,6 +7,7 @@ import { getUser } from '../services/users';
 import { getCurrentLocation } from '../services/location';
 import * as Location from 'expo-location';
 import { getFavoriteDestinations, updateDriverPosition } from '../services/trips';
+import * as Notifications from 'expo-notifications';
 import { postEvent } from '../services/events';
 
 const {width, height} = Dimensions.get("window");
@@ -61,6 +62,23 @@ export default function LoginScreen({navigation}) {
                 setLoading(false)
                 return;
             }
+
+            //Permiso para enviar notificaciones
+    
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            console.log("final srarus ",finalStatus)
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                console.log("srarus ",status)
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            
+              
             
             // se busca la current location
             const location = await getCurrentLocation();
@@ -108,7 +126,7 @@ export default function LoginScreen({navigation}) {
                 }
                 setUser(current_user)
             }
-            
+  
             await postEvent('LOGIN', idTokenResult.token);
 
             setRole(user_response.roles[0])
@@ -121,6 +139,7 @@ export default function LoginScreen({navigation}) {
             console.log("Login: Error buscando el usuario");
             setLoading(false)
             alert(err.message);
+            return;
         }
     };
 

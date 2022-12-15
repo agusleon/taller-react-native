@@ -1,16 +1,19 @@
 import { StyleSheet, View, FlatList} from 'react-native';
 import {Button, Text} from 'react-native-paper';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useRef} from 'react';
 import { FiuberContext } from '../context/FiuberContext';
 import TopBar from '../components/TopBar';
 import { getUser } from '../services/users';
 import { getAvailableTrips, updateTripStatus } from '../services/trips';
 import { AWAITING_DRIVER, BEGIN } from '../utils/vars';
+import { registerForPushNotificationsAsync } from '../services/notifications';
 
 const TripsAvailableScreen = ({navigation}) => {
 
     const {user, focusLocation, setPassenger, setDestination, setShowDirections, setStatus, status} = useContext(FiuberContext);
     const [trips, setTrips] = useState([]);
+    const notificationListener = useRef();
+    const [notification, setNotification] = useState(false);
 
 
     const ListEmptyComponent=()=> {
@@ -85,7 +88,14 @@ const TripsAvailableScreen = ({navigation}) => {
         try {
             console.log("Searching for trips")
             const trips = await getAvailableTrips(user.jwt);
+         
+            if(trips.length>0 && !notification){
+              registerForPushNotificationsAsync("New notification", "You have new trips available", notificationListener)
+              setNotification(true)
+            }
+
             setTrips(trips)
+            
         } catch (e) {
           console.log(e);
         }
@@ -94,7 +104,8 @@ const TripsAvailableScreen = ({navigation}) => {
       useEffect(() => {
         if (status == BEGIN) {
           fetchAvailableTrips();
-        }
+    }
+
       }, [focusLocation]);
 
     const renderItem=({item})=>{
