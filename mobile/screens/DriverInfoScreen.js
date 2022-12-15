@@ -25,30 +25,24 @@ const DriverInfoScreen = ({navigation}) => {
         if (response.avg_driver_rating != null) {
           setRating(response.avg_driver_rating.toFixed(1))
         }
-        setComments(comments.concat(response.driver_ratings.map((r) =>  r.text)))
+        // setComments(comments.concat(response.driver_ratings.map((r) =>  r.text)))
+        setComments(response.driver_ratings.map((r) =>  r.text))
         console.log("los comments ",response.driver_ratings.map((r) =>  r.text))
 
       } catch (err) {console.log("Error en review al driver", err)}     
 
   }
 
-  const handleFinish = () => {
-    setDriver(false)
-    navigation.navigate('Home')
-  }
-  
   useEffect(()=>{
     getDriverInfo()
 },[userReviewed])
 
   const renderItem=({item})=>{
     return (
-        <View style={styles.listContainer}>
           <View style={styles.listCommentsText}>
             <Ionicons name="chatbox-ellipses-outline" size={20} />
             <Text style={styles.text}>{item}</Text>
           </View>
-        </View>
     )
   }
   const ListEmptyComponent=()=> {
@@ -78,12 +72,11 @@ const DriverInfoScreen = ({navigation}) => {
 
           <View style={styles.carDetails}>
             <Ionicons name="car" color="#777777" size={20}/>
-            <Text style={{color:"#777777", marginLeft: 20}}>{driver.car_model} - {driver.car_patent}</Text>
+            <Text style={{color:"#777777", marginLeft: 20}}>{driver.car_model} - {driver.car_plate}</Text>
           </View>
 
           <View style={styles.infoBoxWrapper}>
             <View style={styles.infoBoxDriverDetails}> 
-      
                 <View style={styles.infoBoxDriver}>
                   <Title>{rating}</Title>
                   <Ionicons name="star" color="#777777" size={20}/>
@@ -110,7 +103,6 @@ const DriverInfoScreen = ({navigation}) => {
               vertical={false}
               />
           </View>
-          <Button onPress={handleFinish}>FINISH</Button>
         </View>
       </SafeAreaView>
    
@@ -129,7 +121,7 @@ export default DriverInfoScreen;
       justifyContent: 'center'
     },
     list_big_container: {
-      backgroundColor: 'green',
+      backgroundColor: '#fff',
       alignItems: 'center',
       justifyContent: 'center'
     },
@@ -137,12 +129,12 @@ export default DriverInfoScreen;
       paddingHorizontal: 30,
       marginBottom: 20,
       marginTop: 150,
-      backgroundColor: 'red'
+      backgroundColor: 'white'
     },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
-      backgroundColor: 'green'
+      backgroundColor: 'white'
     },
     text: {
       fontSize: 20,
@@ -207,7 +199,7 @@ export default DriverInfoScreen;
       margin:1,
       height:'100%',
       width:350,
-      backgroundColor:'red',
+      backgroundColor:'white',
       justifyContent:'flex-start',
       alignItems:'flex-start'
   },

@@ -48,7 +48,7 @@ const PassengerInfoScreen= ({navigation}) => {
 
           <View style={styles.listCommentsText}>
           <Ionicons name="chatbox-ellipses-outline" size={20} />
-            <Text style={styles.text}>{item}</Text>
+          <Text style={styles.text}>{item}</Text>
             
         </View>
         </View>
@@ -100,12 +100,13 @@ const PassengerInfoScreen= ({navigation}) => {
               
             {!(userReviewed) ?
               <View style={styles.rate}>
-                <Button
+                {/* <Button onPress={() => {navigation.navigate('Review Passenger')}}>Review</Button> */}
+                {/* <Button
                   title="Review"
                   onPress={() => {navigation.navigate('Review Passenger')}}
                   color="#BF0AFF"
                   accessibilityLabel="Review"
-                />
+                /> */}
               </View>
             :
               <></>

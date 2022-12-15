@@ -25,7 +25,7 @@ const EditProfileScreen = ({navigation}) => {
     const [nameEdit, setNameEdit] = React.useState(user.name);
     const [roleEdit, setRoleEdit] = React.useState(role);
     const [modelEdit, setModelEdit] = React.useState(user.car_model);
-    const [patentEdit, setPatentEdit] = React.useState(user.car_patent);
+    const [patentEdit, setPatentEdit] = React.useState(user.car_plate);
     const [suggestionsList, setSuggestionsList] = useState(null)
     const [selectedModel, setSelectedModel] = useState(null)
 
@@ -39,7 +39,7 @@ const EditProfileScreen = ({navigation}) => {
         setRoleEdit(role)
 
         setModelEdit(user.car_model)
-        setPatentEdit(user.car_patent)
+        setPatentEdit(user.car_plate)
         setEditable(false)
     }
 
@@ -48,11 +48,7 @@ const EditProfileScreen = ({navigation}) => {
     }
 
     async function getSuggestionsList(q){
-      console.log("entro aca")
-      console.log('getSuggestions', q)
       const response = await getSuggestions(q.toLowerCase())
-      
-      console.log("items ", response)
       
       const suggestions = response.map(r => ({
           id: uuid(), 
@@ -60,8 +56,7 @@ const EditProfileScreen = ({navigation}) => {
       }))
     
       setSuggestionsList(suggestions)
-      console.log("suggestions ", [...new Set(suggestions)])
-      console.log("la list", suggestionsList)
+
     }
 
     useEffect((q)=>{
@@ -71,13 +66,18 @@ const EditProfileScreen = ({navigation}) => {
   },[])
 
     const handleSave = async () => {
-            console.log("model ", modelEdit)
             try{
+
+              if (role == 'passenger' && roleEdit == 'driver' && (!selectedModel && patentEdit == '')){
+                Alert.alert("You have to enter your car information.")
+                return;
+              } else if (nameEdit == '' || roleEdit == '' || patentEdit == '' || modelEdit == '') {
+                Alert.alert("Missing fields!")
+                return;
+              }
+
               if(roleEdit == 'passenger') {
-                if(!nameEdit || !roleEdit ){
-                  Alert.alert("Missing fields!")
-                  return
-                } 
+
                 await updateUserInfo(user.uid, user.jwt, nameEdit,  roleEdit)
                 const user_response = await getUser(user.uid, user.jwt);
                 console.log("User response GET", user_response)
@@ -85,33 +85,29 @@ const EditProfileScreen = ({navigation}) => {
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email,
-                  wallet: user_response.wallet,
+                  email: user.email,
                   password: user.password,
                   jwt: user.jwt,
                 }
                 setUser(updateUser)
     
               }else{
-                
+                console.log(patentEdit)
+                if (selectedModel) {
+                  setModelEdit(selectedModel.title)
+                }
                
-                if(!nameEdit || !roleEdit || !selectedModel || !patentEdit){
-                  Alert.alert("Missing fields!")
-                  return
-                } 
-                setModelEdit(selectedModel.title)
                 await updateDriverInfo(user.uid, user.jwt, nameEdit,  roleEdit, modelEdit, patentEdit)
                 const user_response = await getUser(user.uid, user.jwt);
-                console.log("User  DRIVER response GET", user_response)
+                console.log("User DRIVER response GET", user_response)
                 const updateUser = {
                   uid: user_response.uid,
                   name: user_response.name,
-                  email,
-                  wallet: user_response.wallet,
+                  email: user.email,
                   password: user.password,
                   jwt: user.jwt,
                   car_model: user_response.car_description,
-                  car_patent: user_response.plate
+                  car_plate: user_response.plate
                 }
                 setUser(updateUser)
               }
@@ -190,7 +186,7 @@ const EditProfileScreen = ({navigation}) => {
                   <Text style={{color: 'grey', marginLeft: 5}}>{user.name}</Text>
                 </View>
                 <Text style={styles.textStyle}>{role}</Text>
-                {(role == 'driver') ? 
+                {(roleEdit == 'driver') ? 
                     <View>
                       <View  style={styles.passwordStyle}>
                         <Ionicons name="car-outline" color="grey" size={20}/>
@@ -198,7 +194,7 @@ const EditProfileScreen = ({navigation}) => {
                       </View>
                       <View  style={styles.passwordStyle}>
                         <MaterialCommunityIcons name="smart-card" size={20} color="grey" />
-                        <Text style={{color: 'grey', marginLeft: 5}}>{user.car_patent}</Text>
+                        <Text style={{color: 'grey', marginLeft: 5}}>{user.car_plate}</Text>
                       </View>
                     </View>
                 :

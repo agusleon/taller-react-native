@@ -110,7 +110,7 @@ const updateUserInfo = async( uid, jwt,name, role) => {
   }
 }
 
-const updateDriverInfo = async( uid, jwt,name, role, car_description, plate) => {
+const updateDriverInfo = async( uid, jwt, name, role, car_description, plate) => {
 
   const body = JSON.stringify({
     name: name,

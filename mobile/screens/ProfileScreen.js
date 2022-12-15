@@ -12,6 +12,7 @@ import TopBar from '../components/TopBar'
 import { FiuberContext } from '../context/FiuberContext';
 import { getTripCount, getUserInfo } from '../services/metrics';
 import { AntDesign } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 
 const ProfileScreen = ({navigation}) => {
@@ -81,10 +82,16 @@ const ProfileScreen = ({navigation}) => {
 
 
           {(role == 'driver') &&
+          <View>
             <View style={styles.row}>
               <Ionicons name="car-outline" color="#777777" size={20}/>
-              { <Text style={{color:"#777777", marginLeft: 20}}>{user.car_model} - {user.car_patent}</Text> }
+              <Text style={{color:"#777777", marginLeft: 20}}>{user.car_model}</Text>
             </View>
+            <View style={styles.row}>
+              <MaterialCommunityIcons name="smart-card" size={20} color="grey" />
+              <Text style={{color:"#777777", marginLeft: 20}}>{user.car_plate}</Text>
+            </View>
+          </View>
           }
         </View>
   

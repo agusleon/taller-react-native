@@ -195,7 +195,6 @@ export default function HomeScreen ({navigation}) {
 
                 setCurrentLocation({...focusLocation})
                 setShowDirections(false)
-                // setGotDriver(false)
                 setOnGoing(false)
                 clearInterval(interval)
 
@@ -233,8 +232,8 @@ export default function HomeScreen ({navigation}) {
 
         try {
 
-            await makeDeposit(driver.trip_id, user.jwt);
-
+            const response_deposit = await makeDeposit(driver.trip_id, user.jwt);
+            console.log(response_deposit)
             const response_payment = await putPayment(user.jwt, driver.trip_id, fee, 1, 0)
             console.log(response_payment)
             

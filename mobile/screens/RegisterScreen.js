@@ -135,7 +135,7 @@ export default function RegisterScreen() {
                     password: password,
                     jwt: idTokenResult.token,
                     car_model: user_response.car_description,
-                    car_patent: user_response.plate
+                    car_plate: user_response.plate
                 }
 
                 setUser(user)

@@ -31,12 +31,12 @@ export default function HomeScreenDriver ({navigation}) {
         destination,
         gotDriver,
         passenger,
-        loggedIn,
         focusLocation,
         setFocusLocation,
         setShowDirections,
         setStatus,
-        setDestination
+        setDestination,
+        setIntervalID
     } = useContext(FiuberContext);
 
     useEffect(() => {
@@ -50,18 +50,6 @@ export default function HomeScreenDriver ({navigation}) {
         navigation.navigate('Trips Available')
         
     }
-
-    const handleWithdrawal = async () => {
-        console.log(passenger.trip_id.toUpperCase())
-        try {
-            const response_withdrawal = await makeWithdrawal(passenger.trip_id.toUpperCase(), user.jwt)
-            console.log(JSON.stringify(response_withdrawal))
-        } catch (error) {
-            console.log(error.message)
-        }
-        
-    }
-    
 
     const updatePosition = () => {
         let interval = setInterval(async () => {
@@ -84,16 +72,15 @@ export default function HomeScreenDriver ({navigation}) {
                     console.log("Could not update position");
                 }
 
-                if (!loggedIn) {
-                    clearInterval(interval)
-                }
-                
+                setIntervalID(interval)
+
             } catch (err) {
                 console.log("Could not update position: ", err.message)
             }
 
 
         }, 10000)
+        
     }
 
     const awaitPayment = () => {
@@ -271,8 +258,6 @@ export default function HomeScreenDriver ({navigation}) {
             <Map gotDriver={gotDriver}/>
             
             <TopBar {...navigation} />
-
-            <Button onPress={handleWithdrawal}>Make withdrawal</Button>
 
             <View style={styles.card}>
 

@@ -31,7 +31,7 @@ const RateUserScreen = ({navigation}) => {
                await rateDriver(driver.id, idTokenResult.token, rating, comment);
                setUserReviewed(true);
                Alert.alert("successfully submitted!")
-               navigation.navigate('Driver Info')
+               navigation.navigate('Driver Info Screen')
              } catch (err) {console.log("Error en review al driver", err)}     
        }else{
             //llamo a la api para mandarle el rating 
